@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
-class Stats extends StatelessWidget {
-  const Stats({super.key});
+class ClubStats extends StatelessWidget {
+  const ClubStats({super.key});
 
   @override
   Widget build(BuildContext context) {
