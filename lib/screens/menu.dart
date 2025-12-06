@@ -1,10 +1,8 @@
-import 'package:eplradar_mobile/right_drawer.dart';
+import 'package:eplradar_mobile/widgets/right_drawer.dart';
 import 'package:flutter/material.dart';
 
 class MyHomePage extends StatefulWidget {
-  const MyHomePage({super.key, required this.title});
-
-  final String title;
+  const MyHomePage({super.key});
 
   @override
   State<MyHomePage> createState() => _MyHomePageState();
@@ -20,40 +18,50 @@ class _MyHomePageState extends State<MyHomePage> {
     // fast, so that you can just rebuild anything that needs updating rather
     // than having to individually change instances of widgets.
     return Scaffold(
+      backgroundColor: const Color(0xFF1D1F22),
       appBar: AppBar(
-        // TRY THIS: Try changing the color here to a specific color (to
-        // Colors.amber, perhaps?) and trigger a hot reload to see the AppBar
-        // change color while the other colors stay the same.
-        // Here we take the value from the MyHomePage object that was created by
-        // the App.build method, and use it to set our appbar title.
-        title: const Text(
-          'Home',
-          style: TextStyle(
-            color: Colors.white,
-            fontWeight: FontWeight.bold,
+        backgroundColor: const Color(0xFF1D1F22),
+        elevation: 0,
+        actions: [
+          Builder(
+            builder: (context) => IconButton(
+              icon: const Icon(Icons.menu),
+              onPressed: () => Scaffold.of(context).openEndDrawer(),
+            ),
           ),
-        ),
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+        ],
       ),
       endDrawer: RightDrawer(),
-      body: Center(
-        // Center is a layout widget. It takes a single child and positions it
-        // in the middle of the parent.
+      body: Container(
+        height: 280,
+        decoration: const BoxDecoration(
+          image: DecorationImage(
+            image: AssetImage("assets/stats.png"),
+            fit: BoxFit.cover,
+            opacity: 0.75,
+          ),
+        ),
+        padding: const EdgeInsets.only(left: 24, right: 24, bottom: 28),
+        alignment: Alignment.bottomLeft,
         child: Column(
-          // Column is also a layout widget. It takes a list of children and
-          // arranges them vertically. By default, it sizes itself to fit its
-          // children horizontally, and tries to be as tall as its parent.
-          //
-          // Column has various properties to control how it sizes itself and
-          // how it positions its children. Here we use mainAxisAlignment to
-          // center the children vertically; the main axis here is the vertical
-          // axis because Columns are vertical (the cross axis would be
-          // horizontal).
-          //
-          // TRY THIS: Invoke "debug painting" (choose the "Toggle Debug Paint"
-          // action in the IDE, or press "p" in the console), to see the
-          // wireframe for each widget.
-          mainAxisAlignment: MainAxisAlignment.center,
+          mainAxisAlignment: MainAxisAlignment.end,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              "Selamat Datang di EPL Radar",
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 42,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 8),
+            const Text(
+              "Portal statistik dan berita Liga Inggris terlengkap. Dapatkan data match, pemain, dan klub terkini.",
+              style: TextStyle(color: Colors.white70, fontSize: 15),
+            ),
+            const SizedBox(height: 18),
+          ],
         ),
       ),
     );
