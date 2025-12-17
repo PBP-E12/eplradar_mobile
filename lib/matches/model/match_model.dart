@@ -1,85 +1,133 @@
 import 'dart:convert';
 
-List<MatchModel> matchModelFromJson(String str) => List<MatchModel>.from(json.decode(str).map((x) => MatchModel.fromJson(x)));
+List<MatchModel> matchModelFromJson(String str) => List<MatchModel>.from(
+    json.decode(str).map((x) => MatchModel.fromJson(x)));
 
-String matchModelToJson(List<MatchModel> data) => json.encode(List<dynamic>.from(data.map((x) => x.toJson())));
+String matchModelToJson(List<MatchModel> data) =>
+    json.encode(List<dynamic>.from(data.map((x) => x.toJson())));
 
 class MatchModel {
-    Model model;
-    int pk;
-    Fields fields;
+  final int id;
+  final String homeTeam;
+  final String awayTeam;
+  final int homeScore;
+  final int awayScore;
+  final int week;
+  final DateTime matchDate;
 
-    MatchModel({
-        required this.model,
-        required this.pk,
-        required this.fields,
-    });
+  MatchModel({
+    required this.id,
+    required this.homeTeam,
+    required this.awayTeam,
+    required this.homeScore,
+    required this.awayScore,
+    required this.week,
+    required this.matchDate,
+  });
 
-    factory MatchModel.fromJson(Map<String, dynamic> json) => MatchModel(
-        model: modelValues.map[json["model"]]!,
-        pk: json["pk"],
-        fields: Fields.fromJson(json["fields"]),
-    );
-
-    Map<String, dynamic> toJson() => {
-        "model": modelValues.reverse[model],
-        "pk": pk,
-        "fields": fields.toJson(),
-    };
-}
-
-class Fields {
-    String homeTeam;
-    String awayTeam;
-    int homeScore;
-    int awayScore;
-    int week;
-    DateTime matchDate;
-
-    Fields({
-        required this.homeTeam,
-        required this.awayTeam,
-        required this.homeScore,
-        required this.awayScore,
-        required this.week,
-        required this.matchDate,
-    });
-
-    factory Fields.fromJson(Map<String, dynamic> json) => Fields(
+  factory MatchModel.fromJson(Map<String, dynamic> json) => MatchModel(
+        id: json["id"],
         homeTeam: json["home_team"],
         awayTeam: json["away_team"],
-        homeScore: json["home_score"],
-        awayScore: json["away_score"],
+        homeScore: json["home_score"] ?? 0,
+        awayScore: json["away_score"] ?? 0,
         week: json["week"],
         matchDate: DateTime.parse(json["match_date"]),
-    );
+      );
 
-    Map<String, dynamic> toJson() => {
+  Map<String, dynamic> toJson() => {
+        "id": id,
         "home_team": homeTeam,
         "away_team": awayTeam,
         "home_score": homeScore,
         "away_score": awayScore,
         "week": week,
         "match_date": matchDate.toIso8601String(),
-    };
+      };
 }
 
-enum Model {
-    MATCHES_MATCH
+// Score Prediction Model
+class ScorePredictionModel {
+  final int id;
+  final UserData user;
+  final MatchData match;
+  final int homeScorePrediction;
+  final int awayScorePrediction;
+  final DateTime createdAt;
+
+  ScorePredictionModel({
+    required this.id,
+    required this.user,
+    required this.match,
+    required this.homeScorePrediction,
+    required this.awayScorePrediction,
+    required this.createdAt,
+  });
+
+  factory ScorePredictionModel.fromJson(Map<String, dynamic> json) =>
+      ScorePredictionModel(
+        id: json["id"],
+        user: UserData.fromJson(json["user"]),
+        match: MatchData.fromJson(json["match"]),
+        homeScorePrediction: json["home_score_prediction"],
+        awayScorePrediction: json["away_score_prediction"],
+        createdAt: DateTime.parse(json["created_at"]),
+      );
+
+  Map<String, dynamic> toJson() => {
+        "id": id,
+        "user": user.toJson(),
+        "match": match.toJson(),
+        "home_score_prediction": homeScorePrediction,
+        "away_score_prediction": awayScorePrediction,
+        "created_at": createdAt.toIso8601String(),
+      };
 }
 
-final modelValues = EnumValues({
-    "matches.match": Model.MATCHES_MATCH
-});
+class UserData {
+  final int id;
+  final String username;
 
-class EnumValues<T> {
-    Map<String, T> map;
-    late Map<T, String> reverseMap;
+  UserData({
+    required this.id,
+    required this.username,
+  });
 
-    EnumValues(this.map);
+  factory UserData.fromJson(Map<String, dynamic> json) => UserData(
+        id: json["id"],
+        username: json["username"],
+      );
 
-    Map<T, String> get reverse {
-            reverseMap = map.map((k, v) => MapEntry(v, k));
-            return reverseMap;
-    }
+  Map<String, dynamic> toJson() => {
+        "id": id,
+        "username": username,
+      };
+}
+
+class MatchData {
+  final int id;
+  final String homeTeam;
+  final String awayTeam;
+  final DateTime matchDate;
+
+  MatchData({
+    required this.id,
+    required this.homeTeam,
+    required this.awayTeam,
+    required this.matchDate,
+  });
+
+  factory MatchData.fromJson(Map<String, dynamic> json) => MatchData(
+        id: json["id"],
+        homeTeam: json["home_team"],
+        awayTeam: json["away_team"],
+        matchDate: DateTime.parse(json["match_date"]),
+      );
+
+  Map<String, dynamic> toJson() => {
+        "id": id,
+        "home_team": homeTeam,
+        "away_team": awayTeam,
+        "match_date": matchDate.toIso8601String(),
+      };
 }
