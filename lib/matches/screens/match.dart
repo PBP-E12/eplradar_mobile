@@ -25,6 +25,8 @@ class _MatchScreenState extends State<MatchScreen> {
   String errorMatches = '';
   String errorPredictions = '';
 
+  int? selectedWeek;
+
   @override
   void initState() {
     super.initState();
@@ -154,24 +156,96 @@ class _MatchScreenState extends State<MatchScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // Klasemen
+              const SizedBox(height: 20),
               _buildSectionHeader('Klasemen'),
+              const SizedBox(height: 4),
               _buildKlasemenSection(),
               
               const SizedBox(height: 24),
               
               // Match
-              _buildSectionHeader('Pertandingan'),
+              _buildMatchHeader(),
+              const SizedBox(height: 4),
               _buildMatchesSection(),
               
               const SizedBox(height: 24),
               
               // Prediksi
               _buildSectionHeader('Prediksi'),
+              const SizedBox(height: 4),
               _buildPredictionsSection(),
               
-              const SizedBox(height: 16),
+              const SizedBox(height: 48),
             ],
           ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildMatchHeader() {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+      child: Row(
+        children: [
+          const Text(
+            'Pertandingan',
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          const Spacer(),
+          _buildWeekFilterInline(),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildWeekFilterInline() {
+    final weeks = matches.map((m) => m.week).toSet().toList()..sort();
+
+    return Container(
+      height: 40,
+      padding: const EdgeInsets.symmetric(horizontal: 20),
+      decoration: BoxDecoration(
+        color: const Color(0xFF333438),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: DropdownButtonHideUnderline(
+        child: DropdownButton<int?>(
+          value: selectedWeek,
+          isDense: true,
+          dropdownColor: const Color(0xFF333438),
+          style: const TextStyle(color: Colors.white, fontSize: 12),
+          items: [
+            const DropdownMenuItem<int?>(
+              value: null,
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text("Semua Pekan"),
+                ],
+              ),
+            ),
+            ...weeks.map((week) {
+              return DropdownMenuItem<int?>(
+                value: week,
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text("Pekan ke-$week"),
+                  ],
+                ),
+              );
+            }),
+          ],
+          onChanged: (value) {
+            setState(() {
+              selectedWeek = value;
+            });
+          },
         ),
       ),
     );
@@ -236,7 +310,7 @@ class _MatchScreenState extends State<MatchScreen> {
         children: [
           // Header
           Container(
-            padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+            padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 20),
             decoration: const BoxDecoration(
               border: Border(
                 bottom: BorderSide(color: Colors.white10),
@@ -244,14 +318,16 @@ class _MatchScreenState extends State<MatchScreen> {
             ),
             child: Row(
               children: const [
-                SizedBox(width: 30, child: Text('#', style: TextStyle(color: Colors.white70, fontSize: 12))),
-                Expanded(child: Text('Tim', style: TextStyle(color: Colors.white70, fontSize: 12))),
-                SizedBox(width: 40, child: Text('Main', style: TextStyle(color: Colors.white70, fontSize: 12), textAlign: TextAlign.center)),
-                SizedBox(width: 40, child: Text('Poin', style: TextStyle(color: Colors.white70, fontSize: 12), textAlign: TextAlign.center)),
+                Expanded(child: Text('Teams', style: TextStyle(color: Colors.white70, fontSize: 12))),
+                SizedBox(width: 40, child: Text('Match', style: TextStyle(color: Colors.white70, fontSize: 12), textAlign: TextAlign.center)),
+                SizedBox(width: 48, child: Text('Win', style: TextStyle(color: Colors.white70, fontSize: 12), textAlign: TextAlign.center)),
+                SizedBox(width: 40, child: Text('Draw', style: TextStyle(color: Colors.white70, fontSize: 12), textAlign: TextAlign.center)),
+                SizedBox(width: 40, child: Text('Lose', style: TextStyle(color: Colors.white70, fontSize: 12), textAlign: TextAlign.center)),
+                SizedBox(width: 40, child: Text('Point', style: TextStyle(color: Colors.white70, fontSize: 12), textAlign: TextAlign.center)),
               ],
             ),
           ),
-          // Rows - Tampilkan SEMUA data klasemen
+          // Tampilkan semua data klasemen
           ...klasemen.map((club) => _buildKlasemenRow(club)).toList(),
         ],
       ),
@@ -260,7 +336,7 @@ class _MatchScreenState extends State<MatchScreen> {
 
   Widget _buildKlasemenRow(dynamic club) {
     return Container(
-      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 20),
       decoration: const BoxDecoration(
         border: Border(bottom: BorderSide(color: Colors.white10)),
       ),
@@ -290,11 +366,35 @@ class _MatchScreenState extends State<MatchScreen> {
           SizedBox(
             width: 40,
             child: Text(
-              '${club['poin']}',
+              '${club['jumlah_win']}',
+              style: const TextStyle(color: Colors.white70),
+              textAlign: TextAlign.center,
+            ),
+          ),
+          SizedBox(
+            width: 40,
+            child: Text(
+              '${club['jumlah_draw']}',
+              style: const TextStyle(color: Colors.white70),
+              textAlign: TextAlign.center,
+            ),
+          ),
+          SizedBox(
+            width: 40,
+            child: Text(
+              '${club['jumlah_lose']}',
               style: const TextStyle(
-                color: Color(0xFF3247B1),
+                color: Colors.white70,
                 fontWeight: FontWeight.bold,
               ),
+              textAlign: TextAlign.center,
+            ),
+          ),
+          SizedBox(
+            width: 40,
+            child: Text(
+              '${club['poin']}',
+              style: const TextStyle(color: Colors.blueAccent),
               textAlign: TextAlign.center,
             ),
           ),
@@ -322,8 +422,10 @@ class _MatchScreenState extends State<MatchScreen> {
         ),
       );
     }
+    
+    final filteredMatch = selectedWeek == null ? matches : matches.where((match) => match.week == selectedWeek).toList();
 
-    if (matches.isEmpty) {
+    if (filteredMatch.isEmpty) {
       return const Padding(
         padding: EdgeInsets.all(16.0),
         child: Text(
@@ -333,9 +435,8 @@ class _MatchScreenState extends State<MatchScreen> {
       );
     }
 
-    // Tampilkan SEMUA matches
     return Column(
-      children: matches.map((match) => _buildMatchCard(match)).toList(),
+      children: filteredMatch.map(_buildMatchCard).toList(),
     );
   }
 
@@ -354,8 +455,8 @@ class _MatchScreenState extends State<MatchScreen> {
           Expanded(
             child: Column(
               children: [
-                Image.network(
-                  'http://localhost:8000/static/img/club-matches/${match.homeTeam}.png',
+                Image.asset(
+                  'images/clubs/${replaceSpacing(match.homeTeam)}.png',
                   width: 40,
                   height: 40,
                   errorBuilder: (context, error, stackTrace) {
@@ -383,7 +484,7 @@ class _MatchScreenState extends State<MatchScreen> {
                     Text(
                       '${match.homeScore}',
                       style: const TextStyle(
-                        color: Color(0xFF3247B1),
+                        color: Colors.blueAccent,
                         fontSize: 24,
                         fontWeight: FontWeight.bold,
                       ),
@@ -394,7 +495,7 @@ class _MatchScreenState extends State<MatchScreen> {
                     Text(
                       '${match.awayScore}',
                       style: const TextStyle(
-                        color: Color(0xFF3247B1),
+                        color: Colors.blueAccent,
                         fontSize: 24,
                         fontWeight: FontWeight.bold,
                       ),
@@ -404,7 +505,7 @@ class _MatchScreenState extends State<MatchScreen> {
                 const SizedBox(height: 4),
                 Text(
                   'Week ${match.week}',
-                  style: const TextStyle(color: Colors.white54, fontSize: 10),
+                  style: const TextStyle(color: Colors.grey, fontSize: 12),
                 ),
               ],
             ),
@@ -413,8 +514,8 @@ class _MatchScreenState extends State<MatchScreen> {
           Expanded(
             child: Column(
               children: [
-                Image.network(
-                  'http://localhost:8000/static/img/club-matches/${match.awayTeam}.png',
+                Image.asset(
+                  'images/clubs/${replaceSpacing(match.awayTeam)}.png',
                   width: 40,
                   height: 40,
                   errorBuilder: (context, error, stackTrace) {
@@ -470,5 +571,9 @@ class _MatchScreenState extends State<MatchScreen> {
     return Column(
       children: predictions.map((pred) => PredictionCard(prediction: pred)).toList(),
     );
+  }
+
+  String replaceSpacing(String clubName) {
+    return clubName.toLowerCase().replaceAll(' ', '_');
   }
 }

@@ -23,24 +23,35 @@ class PredictionCard extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
-                'Oleh: ${prediction.user.username}',
-                style: const TextStyle(
-                  color: Colors.white70,
-                  fontSize: 12,
+              RichText(
+                text: TextSpan(
+                  style: const TextStyle(
+                    color: Colors.white70,
+                    fontSize: 12,
+                  ),
+                  children: [
+                    const TextSpan(text: 'Dibuat oleh '),
+                    TextSpan(
+                      text: prediction.user.username,
+                      style: const TextStyle(
+                        fontWeight: FontWeight.w500,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ],
                 ),
               ),
               Text(
-                DateFormat('dd MMM yyyy').format(prediction.match.matchDate),
+                DateFormat('dd MMM yyyy').format(prediction.createdAt),
                 style: const TextStyle(
-                  color: Colors.white54,
-                  fontSize: 11,
+                  color: Colors.grey,
+                  fontSize: 12,
                 ),
               ),
             ],
           ),
 
-          const SizedBox(height: 12),
+          const SizedBox(height: 16),
 
           // Match prediction
           Row(
@@ -50,8 +61,8 @@ class PredictionCard extends StatelessWidget {
               Expanded(
                 child: Column(
                   children: [
-                    Image.network(
-                      'http://localhost:8000/static/img/club-matches/${prediction.match.homeTeam}.png',
+                    Image.asset(
+                      'images/clubs/${replaceSpacing(prediction.match.homeTeam)}.png',
                       width: 40,
                       height: 40,
                       errorBuilder: (context, error, stackTrace) {
@@ -85,7 +96,7 @@ class PredictionCard extends StatelessWidget {
                       Text(
                         '${prediction.homeScorePrediction}',
                         style: const TextStyle(
-                          color: Color(0xFF3247B1),
+                          color: Colors.blue,
                           fontSize: 24,
                           fontWeight: FontWeight.bold,
                         ),
@@ -102,7 +113,7 @@ class PredictionCard extends StatelessWidget {
                       Text(
                         '${prediction.awayScorePrediction}',
                         style: const TextStyle(
-                          color: Color(0xFF3247B1),
+                          color: Colors.blueAccent,
                           fontSize: 24,
                           fontWeight: FontWeight.bold,
                         ),
@@ -114,7 +125,7 @@ class PredictionCard extends StatelessWidget {
                     'Prediksi',
                     style: TextStyle(
                       color: Colors.white54,
-                      fontSize: 10,
+                      fontSize: 12,
                     ),
                   ),
                 ],
@@ -125,7 +136,7 @@ class PredictionCard extends StatelessWidget {
                 child: Column(
                   children: [
                     Image.network(
-                      'http://localhost:8000/static/img/club-matches/${prediction.match.awayTeam}.png',
+                      'images/clubs/${replaceSpacing(prediction.match.awayTeam)}.png',
                       width: 40,
                       height: 40,
                       errorBuilder: (context, error, stackTrace) {
@@ -153,20 +164,13 @@ class PredictionCard extends StatelessWidget {
             ],
           ),
 
-          const SizedBox(height: 12),
-
-          // Created at info
-          Center(
-            child: Text(
-              'Diprediksi pada: ${DateFormat('dd MMM yyyy, HH:mm').format(prediction.createdAt)}',
-              style: const TextStyle(
-                color: Colors.white38,
-                fontSize: 10,
-              ),
-            ),
-          ),
+          const SizedBox(height: 16),
         ],
       ),
     );
+  }
+
+  String replaceSpacing(String clubName) {
+    return clubName.toLowerCase().replaceAll(' ', '_');
   }
 }
