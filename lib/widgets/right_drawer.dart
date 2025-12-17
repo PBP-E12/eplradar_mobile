@@ -1,3 +1,4 @@
+import 'package:eplradar_mobile/matches/screens/match.dart';
 import 'package:flutter/material.dart';
 import 'package:pbp_django_auth/pbp_django_auth.dart';
 import 'package:provider/provider.dart';
@@ -66,7 +67,7 @@ class RightDrawer extends StatelessWidget {
             context,
             icon: Icons.newspaper,
             title: "Match",
-            page: const NewsPage(),   // TODO: ganti nanti
+            page: const MatchScreen(),
           ),
           _item(
             context,
