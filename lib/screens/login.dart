@@ -153,7 +153,7 @@ class _LoginPageState extends State<LoginPage> {
   Future<void> _doLogin(CookieRequest request) async {
     setState(() => loading = true);
 
-    final response = await request.login("http://localhost:8000/auth/login/", {
+    final response = await request.login("https://raihan-maulana41-eplradar.pbp.cs.ui.ac.id/auth/login/", {
       "username": _usernameController.text,
       "password": _passwordController.text,
     });
