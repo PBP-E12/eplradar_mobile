@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:pbp_django_auth/pbp_django_auth.dart';
 import '../models/news_entry.dart';
 import 'news_detail.dart';
+import 'add_news_form.dart';
 
 class NewsPage extends StatefulWidget {
   const NewsPage({super.key});
@@ -13,10 +14,10 @@ class NewsPage extends StatefulWidget {
 
 class _NewsPageState extends State<NewsPage> {
   final ScrollController _scrollController = ScrollController();
-  
+
   String selectedCategory = "Semua";
   String selectedSort = "Terbaru";
-  
+
   final List<String> categories = [
     "Semua",
     "Transfer",
@@ -29,10 +30,8 @@ class _NewsPageState extends State<NewsPage> {
 
   Future<List<NewsEntry>> fetchNews(CookieRequest request) async {
     final response = await request.get('http://127.0.0.1:8000/news/json/news_list');
-    var data = response;
-    
     List<NewsEntry> listNews = [];
-    for (var d in data) {
+    for (var d in response) {
       if (d != null) {
         listNews.add(NewsEntry.fromJson(d));
       }
@@ -44,7 +43,7 @@ class _NewsPageState extends State<NewsPage> {
     List<NewsEntry> filteredList = List.from(originalList);
 
     if (selectedCategory != "Semua") {
-      filteredList = filteredList.where((news) => 
+      filteredList = filteredList.where((news) =>
         news.category.toLowerCase() == selectedCategory.toLowerCase()
       ).toList();
     }
@@ -88,22 +87,16 @@ class _NewsPageState extends State<NewsPage> {
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 40),
               decoration: const BoxDecoration(
                 image: DecorationImage(
-                  image: AssetImage('assets/images/hero_news.jpg'), 
+                  image: AssetImage('assets/hero.png'),
                   fit: BoxFit.cover,
-                  opacity: 0.4,
                 ),
-                color: Colors.black,
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   const Text(
                     "Berita",
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 32,
-                      fontWeight: FontWeight.bold,
-                    ),
+                    style: TextStyle(color: Colors.white, fontSize: 32, fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 10),
                   const Text(
@@ -138,34 +131,69 @@ class _NewsPageState extends State<NewsPage> {
                     style: TextStyle(color: Colors.white, fontSize: 22, fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 5),
-                  const Text("Login untuk menambahkan berita.", style: TextStyle(color: Colors.grey, fontSize: 12)),
+                  const Text(
+                    "Login untuk menambahkan berita.",
+                    style: TextStyle(color: Colors.grey, fontSize: 12),
+                  ),
                   const SizedBox(height: 15),
-                  SingleChildScrollView(
-                    scrollDirection: Axis.horizontal,
-                    child: Row(
+                  SizedBox(
+                    height: 60,
+                    child: Stack(
                       children: [
-                        _buildCustomDropdown(
-                          value: selectedCategory,
-                          items: categories,
-                          onChanged: (val) {
-                            setState(() {
-                              selectedCategory = val!;
-                            });
-                          },
+                        Positioned(
+                          left: 0,
+                          top: 0,
+                          child: SingleChildScrollView(
+                            scrollDirection: Axis.horizontal,
+                            child: Row(
+                              children: [
+                                _buildCustomDropdown(
+                                  value: selectedCategory,
+                                  items: categories,
+                                  onChanged: (val) {
+                                    setState(() {
+                                      selectedCategory = val!;
+                                    });
+                                  },
+                                ),
+                                const SizedBox(width: 10),
+                                _buildCustomDropdown(
+                                  value: selectedSort,
+                                  items: ["Terbaru", "Terlama"],
+                                  onChanged: (val) {
+                                    setState(() {
+                                      selectedSort = val!;
+                                    });
+                                  },
+                                ),
+                              ],
+                            ),
+                          ),
                         ),
-                        const SizedBox(width: 10),
-                        _buildCustomDropdown(
-                          value: selectedSort,
-                          items: ["Terbaru", "Terlama"],
-                          onChanged: (val) {
-                            setState(() {
-                              selectedSort = val!;
-                            });
-                          },
+                        Positioned(
+                          right: 0,
+                          top: -6,
+                          child: ElevatedButton(
+                            onPressed: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(builder: (_) => const AddNewsPage()),
+                              );
+                            },
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.indigo,
+                              foregroundColor: Colors.white,
+                              padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                            ),
+                            child: const Text("Add News"),
+                          ),
                         ),
                       ],
                     ),
-                  )
+                  ),
                 ],
               ),
             ),
@@ -173,42 +201,36 @@ class _NewsPageState extends State<NewsPage> {
               future: fetchNews(request),
               builder: (context, AsyncSnapshot snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
-                  return const Center(child: Padding(
-                    padding: EdgeInsets.all(20.0),
-                    child: CircularProgressIndicator(),
-                  ));
-                } else if (snapshot.hasError) {
-                  return Center(child: Text("Error: ${snapshot.error}", style: const TextStyle(color: Colors.white)));
+                  return const Padding(
+                    padding: EdgeInsets.all(20),
+                    child: Center(child: CircularProgressIndicator()),
+                  );
+                } else if (!snapshot.hasData || snapshot.data.isEmpty) {
+                  return const Padding(
+                    padding: EdgeInsets.all(40),
+                    child: Center(
+                      child: Text('Belum ada berita tersimpan.', style: TextStyle(color: Colors.grey)),
+                    ),
+                  );
                 } else {
-                  if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                    return const Center(
-                      child: Padding(
-                        padding: EdgeInsets.all(40.0),
-                        child: Text('Belum ada berita tersimpan.', style: TextStyle(color: Colors.grey)),
+                  List<NewsEntry> displayedNews = _filterAndSortNews(snapshot.data);
+                  if (displayedNews.isEmpty) {
+                    return const Padding(
+                      padding: EdgeInsets.all(40),
+                      child: Center(
+                        child: Text('Tidak ada berita di kategori ini.', style: TextStyle(color: Colors.grey)),
                       ),
                     );
-                  } else {
-                    List<NewsEntry> displayedNews = _filterAndSortNews(snapshot.data!);
-
-                    if (displayedNews.isEmpty) {
-                       return const Center(
-                         child: Padding(
-                           padding: EdgeInsets.all(40.0),
-                           child: Text('Tidak ada berita di kategori ini.', style: TextStyle(color: Colors.grey))
-                         )
-                       );
-                    }
-
-                    return ListView.builder(
-                      shrinkWrap: true,
-                      physics: const NeverScrollableScrollPhysics(),
-                      itemCount: displayedNews.length,
-                      padding: const EdgeInsets.symmetric(horizontal: 16),
-                      itemBuilder: (_, index) {
-                        return _buildNewsCard(context, displayedNews[index], cardColor);
-                      },
-                    );
                   }
+                  return ListView.builder(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    itemCount: displayedNews.length,
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    itemBuilder: (_, index) {
+                      return _buildNewsCard(context, displayedNews[index], cardColor);
+                    },
+                  );
                 }
               },
             ),
@@ -220,9 +242,9 @@ class _NewsPageState extends State<NewsPage> {
   }
 
   Widget _buildCustomDropdown({
-    required String value, 
-    required List<String> items, 
-    required Function(String?) onChanged
+    required String value,
+    required List<String> items,
+    required Function(String?) onChanged,
   }) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
@@ -233,16 +255,13 @@ class _NewsPageState extends State<NewsPage> {
       ),
       child: DropdownButtonHideUnderline(
         child: DropdownButton<String>(
-          value: items.contains(value) ? value : items.first,
+          value: value,
           dropdownColor: const Color(0xFF2A2D32),
-          style: const TextStyle(color: Colors.white, fontSize: 14),
+          style: const TextStyle(color: Colors.white),
           icon: const Icon(Icons.arrow_drop_down, color: Colors.white),
           onChanged: onChanged,
-          items: items.map<DropdownMenuItem<String>>((String value) {
-            return DropdownMenuItem<String>(
-              value: value,
-              child: Text(value),
-            );
+          items: items.map((item) {
+            return DropdownMenuItem(value: item, child: Text(item));
           }).toList(),
         ),
       ),
@@ -250,7 +269,7 @@ class _NewsPageState extends State<NewsPage> {
   }
 
   Widget _buildNewsCard(BuildContext context, NewsEntry news, Color cardColor) {
-    const String baseUrl = 'http://127.0.0.1:8000'; 
+    const String baseUrl = 'http://127.0.0.1:8000';
 
     return Card(
       color: cardColor,
@@ -261,9 +280,7 @@ class _NewsPageState extends State<NewsPage> {
         onTap: () {
           Navigator.push(
             context,
-            MaterialPageRoute(
-              builder: (context) => NewsDetailPage(news: news),
-            ),
+            MaterialPageRoute(builder: (_) => NewsDetailPage(news: news)),
           );
         },
         child: Column(
@@ -273,28 +290,21 @@ class _NewsPageState extends State<NewsPage> {
               height: 200,
               width: double.infinity,
               child: Image.network(
-                 news.thumbnail.startsWith('http') 
-                    ? news.thumbnail 
+                news.thumbnail.startsWith('http')
+                    ? news.thumbnail
                     : '$baseUrl/media/${news.thumbnail}',
                 fit: BoxFit.cover,
-                errorBuilder: (ctx, err, stack) => Container(
-                  color: Colors.grey[800],
-                  child: const Center(child: Icon(Icons.image, color: Colors.white54)),
-                ),
               ),
             ),
             Padding(
-              padding: const EdgeInsets.all(16.0),
+              padding: const EdgeInsets.all(16),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text(
-                        news.category,
-                        style: const TextStyle(color: Colors.grey, fontSize: 12),
-                      ),
+                      Text(news.category, style: const TextStyle(color: Colors.grey, fontSize: 12)),
                       Text(
                         "${news.createdAt.day}/${news.createdAt.month}/${news.createdAt.year}",
                         style: const TextStyle(color: Colors.grey, fontSize: 12),
@@ -304,30 +314,15 @@ class _NewsPageState extends State<NewsPage> {
                   const SizedBox(height: 8),
                   Text(
                     news.title,
-                    style: const TextStyle(
-                      fontSize: 18.0,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                    ),
+                    style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 8),
                   Text(
                     news.content,
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(color: Colors.white70, fontSize: 14),
+                    style: const TextStyle(color: Colors.white70),
                   ),
-                  const SizedBox(height: 16),
-                  const Row(
-                    children: [
-                      Text(
-                        "Baca selengkapnya",
-                        style: TextStyle(color: Colors.blueAccent, fontWeight: FontWeight.w600),
-                      ),
-                      SizedBox(width: 4),
-                      Icon(Icons.arrow_forward, size: 14, color: Colors.blueAccent),
-                    ],
-                  )
                 ],
               ),
             ),

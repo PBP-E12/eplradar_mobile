@@ -89,7 +89,7 @@ class _RegisterPageState extends State<RegisterPage> {
                     String password2 = _confirmPasswordController.text;
 
                     final response = await request.postJson(
-                      "http://10.0.2.2:8000/auth/register/",
+                      "http://localhost:8000/auth/register/",
                       jsonEncode({
                         "username": username,
                         "password1": password1,
@@ -99,7 +99,7 @@ class _RegisterPageState extends State<RegisterPage> {
 
                     if (!mounted) return;
 
-                    if (response["status"] == "success") {
+                    if (response != null && response["status"] == true) {
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(content: Text("Successfully registered!")),
                       );
