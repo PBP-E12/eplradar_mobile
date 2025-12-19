@@ -1,8 +1,8 @@
-import 'package:eplradar_mobile/matches/screens/match.dart';
 import 'package:flutter/material.dart';
-import 'package:pbp_django_auth/pbp_django_auth.dart';
 import 'package:provider/provider.dart';
+import 'package:pbp_django_auth/pbp_django_auth.dart';
 
+import 'package:eplradar_mobile/matches/screens/match.dart';
 import '../screens/menu.dart';
 import '../news/screens/news.dart';
 import '../stats/screens/stats_home_screen.dart';
@@ -12,10 +12,14 @@ import '../screens/register.dart';
 class RightDrawer extends StatelessWidget {
   const RightDrawer({super.key});
 
+  static const String baseUrl =
+      "https://raihan-maulana41-eplradar.pbp.cs.ui.ac.id";
+
   @override
   Widget build(BuildContext context) {
     final request = context.watch<CookieRequest>();
     final String? username = request.jsonData["username"];
+
     final bool isLoggedIn =
         request.loggedIn && username != null && username.trim().isNotEmpty;
 
@@ -37,62 +41,40 @@ class RightDrawer extends StatelessWidget {
                     fontWeight: FontWeight.bold,
                   ),
                 ),
-                
                 const SizedBox(height: 8),
-
                 Text(
                   isLoggedIn ? "Hi, $username" : "Not Logged In",
-                  style: const TextStyle(color: Colors.white70, fontSize: 16),
+                  style:
+                      const TextStyle(color: Colors.white70, fontSize: 16),
                 ),
-
                 const SizedBox(height: 12),
-
                 const Text(
                   "Semua statistik, berita, dan data EPL lengkap.",
-                  style: TextStyle(color: Colors.white54, fontSize: 13),
+                  style:
+                      TextStyle(color: Colors.white54, fontSize: 13),
                 ),
               ],
             ),
           ),
 
-          const SizedBox(height: 16),
+          const SizedBox(height: 12),
 
-          _item(
-            context,
-            icon: Icons.home_outlined,
-            title: "Home",
-            page: const MyHomePage(),
-          ),
-          _item(
-            context,
-            icon: Icons.newspaper,
-            title: "Match",
-            page: const MatchScreen(),
-          ),
-          _item(
-            context,
-            icon: Icons.analytics,
-            title: "Statistik",
-            page: const StatsHomeScreen(),
-          ),
-          _item(
-            context,
-            icon: Icons.person_search,
-            title: "Pemain",
-            page: const NewsPage(), // TODO : ganti nanti
-          ),
-          _item(
-            context,
-            icon: Icons.shield_outlined,
-            title: "Klub",
-            page: const NewsPage(), // TODO: ganti nanti
-          ),
-          _item(
-            context,
-            icon: Icons.article_outlined,
-            title: "Berita",
-            page: const NewsPage(),   // TODO: ganti nanti
-          ),
+          _item(context,
+              icon: Icons.home_outlined,
+              title: "Home",
+              page: const MyHomePage()),
+          _item(context,
+              icon: Icons.newspaper,
+              title: "Match",
+              page: const MatchScreen()),
+          _item(context,
+              icon: Icons.analytics,
+              title: "Statistik",
+              page: const StatsHomeScreen()),
+          _item(context,
+              icon: Icons.article_outlined,
+              title: "Berita",
+              page: const NewsPage()),
 
           const Divider(
             color: Colors.white24,
@@ -101,6 +83,7 @@ class RightDrawer extends StatelessWidget {
             endIndent: 16,
           ),
 
+      
           if (!isLoggedIn)
             _item(
               context,
@@ -121,23 +104,34 @@ class RightDrawer extends StatelessWidget {
 
           if (isLoggedIn)
             ListTile(
-              leading: const Icon(Icons.logout, color: Colors.redAccent),
+              leading:
+                  const Icon(Icons.logout, color: Colors.redAccent),
               title: const Text(
                 "Logout",
                 style: TextStyle(color: Colors.redAccent),
               ),
               onTap: () async {
-                Navigator.pop(context); // tutup drawer
+  Navigator.pop(context);
 
-                final req = context.read<CookieRequest>();
-                await req.logout("http://10.0.2.2:8000/auth/logout/");
+  final req = context.read<CookieRequest>();
 
-                Navigator.pushAndRemoveUntil(
-                  context,
-                  MaterialPageRoute(builder: (_) => const MyHomePage()),
-                  (_) => false,
-                );
-              },
+  try {
+    await req.logout(
+      "https://raihan-maulana41-eplradar.pbp.cs.ui.ac.id/auth/logout/",
+    );
+
+    Navigator.pushAndRemoveUntil(
+      context,
+      MaterialPageRoute(builder: (_) => const LoginPage()),
+      (_) => false,
+    );
+  } catch (e) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text("Logout failed: $e")),
+    );
+  }
+},
+
             ),
 
           const SizedBox(height: 20),
@@ -146,6 +140,7 @@ class RightDrawer extends StatelessWidget {
     );
   }
 
+  
   Widget _item(
     BuildContext context, {
     required IconData icon,
@@ -157,8 +152,11 @@ class RightDrawer extends StatelessWidget {
       leading: Icon(icon, color: color),
       title: Text(title, style: TextStyle(color: color)),
       onTap: () {
-        Navigator.pop(context); // tutup drawer
-        Navigator.push(context, MaterialPageRoute(builder: (_) => page));
+        Navigator.pop(context);
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (_) => page),
+        );
       },
     );
   }
