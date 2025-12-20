@@ -29,7 +29,10 @@ class _NewsPageState extends State<NewsPage> {
   ];
 
   Future<List<NewsEntry>> fetchNews(CookieRequest request) async {
-    final response = await request.get('https://raihan-maulana41-eplradar.pbp.cs.ui.ac.id/news/json/news_list');
+    final response = await request.get(
+      'https://raihan-maulana41-eplradar.pbp.cs.ui.ac.id/news/json/news_list',
+    );
+
     List<NewsEntry> listNews = [];
     for (var d in response) {
       if (d != null) {
@@ -43,9 +46,11 @@ class _NewsPageState extends State<NewsPage> {
     List<NewsEntry> filteredList = List.from(originalList);
 
     if (selectedCategory != "Semua") {
-      filteredList = filteredList.where((news) =>
-        news.category.toLowerCase() == selectedCategory.toLowerCase()
-      ).toList();
+      filteredList = filteredList
+          .where((news) =>
+              news.category.toLowerCase() ==
+              selectedCategory.toLowerCase())
+          .toList();
     }
 
     if (selectedSort == "Terbaru") {
@@ -66,6 +71,7 @@ class _NewsPageState extends State<NewsPage> {
   @override
   Widget build(BuildContext context) {
     final request = context.watch<CookieRequest>();
+
     const Color bgColor = Color(0xFF1D1F22);
     const Color cardColor = Color(0xFF2A2D32);
 
@@ -96,7 +102,10 @@ class _NewsPageState extends State<NewsPage> {
                 children: [
                   const Text(
                     "Berita",
-                    style: TextStyle(color: Colors.white, fontSize: 32, fontWeight: FontWeight.bold),
+                    style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 32,
+                        fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 10),
                   const Text(
@@ -117,7 +126,7 @@ class _NewsPageState extends State<NewsPage> {
                       foregroundColor: Colors.white,
                     ),
                     child: const Text("Lihat Berita"),
-                  )
+                  ),
                 ],
               ),
             ),
@@ -128,13 +137,17 @@ class _NewsPageState extends State<NewsPage> {
                 children: [
                   const Text(
                     "Berita Terkini",
-                    style: TextStyle(color: Colors.white, fontSize: 22, fontWeight: FontWeight.bold),
+                    style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 22,
+                        fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 5),
-                  const Text(
-                    "Login untuk menambahkan berita.",
-                    style: TextStyle(color: Colors.grey, fontSize: 12),
-                  ),
+                  if (!request.loggedIn)
+                    const Text(
+                      "Login untuk menambahkan berita.",
+                      style: TextStyle(color: Colors.grey, fontSize: 12),
+                    ),
                   const SizedBox(height: 15),
                   SizedBox(
                     height: 60,
@@ -159,7 +172,7 @@ class _NewsPageState extends State<NewsPage> {
                                 const SizedBox(width: 10),
                                 _buildCustomDropdown(
                                   value: selectedSort,
-                                  items: ["Terbaru", "Terlama"],
+                                  items: const ["Terbaru", "Terlama"],
                                   onChanged: (val) {
                                     setState(() {
                                       selectedSort = val!;
@@ -170,27 +183,33 @@ class _NewsPageState extends State<NewsPage> {
                             ),
                           ),
                         ),
-                        Positioned(
-                          right: 0,
-                          top: -6,
-                          child: ElevatedButton(
-                            onPressed: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(builder: (_) => const AddNewsPage()),
-                              );
-                            },
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.indigo,
-                              foregroundColor: Colors.white,
-                              padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12),
+                        if (request.loggedIn)
+                          Positioned(
+                            right: 0,
+                            top: -6,
+                            child: ElevatedButton(
+                              onPressed: () async {
+                                final result = await Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                      builder: (_) => const AddNewsPage()),
+                                );
+                                if (result == true) {
+                                  setState(() {});
+                                }
+                              },
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.indigo,
+                                foregroundColor: Colors.white,
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 18, vertical: 14),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
                               ),
+                              child: const Text("Add News"),
                             ),
-                            child: const Text("Add News"),
                           ),
-                        ),
                       ],
                     ),
                   ),
@@ -209,26 +228,36 @@ class _NewsPageState extends State<NewsPage> {
                   return const Padding(
                     padding: EdgeInsets.all(40),
                     child: Center(
-                      child: Text('Belum ada berita tersimpan.', style: TextStyle(color: Colors.grey)),
+                      child: Text(
+                        'Belum ada berita tersimpan.',
+                        style: TextStyle(color: Colors.grey),
+                      ),
                     ),
                   );
                 } else {
-                  List<NewsEntry> displayedNews = _filterAndSortNews(snapshot.data);
+                  List<NewsEntry> displayedNews =
+                      _filterAndSortNews(snapshot.data);
+
                   if (displayedNews.isEmpty) {
                     return const Padding(
                       padding: EdgeInsets.all(40),
                       child: Center(
-                        child: Text('Tidak ada berita di kategori ini.', style: TextStyle(color: Colors.grey)),
+                        child: Text(
+                          'Tidak ada berita di kategori ini.',
+                          style: TextStyle(color: Colors.grey),
+                        ),
                       ),
                     );
                   }
+
                   return ListView.builder(
                     shrinkWrap: true,
                     physics: const NeverScrollableScrollPhysics(),
                     itemCount: displayedNews.length,
                     padding: const EdgeInsets.symmetric(horizontal: 16),
                     itemBuilder: (_, index) {
-                      return _buildNewsCard(context, displayedNews[index], cardColor);
+                      return _buildNewsCard(
+                          context, displayedNews[index], cardColor);
                     },
                   );
                 }
@@ -260,16 +289,19 @@ class _NewsPageState extends State<NewsPage> {
           style: const TextStyle(color: Colors.white),
           icon: const Icon(Icons.arrow_drop_down, color: Colors.white),
           onChanged: onChanged,
-          items: items.map((item) {
-            return DropdownMenuItem(value: item, child: Text(item));
-          }).toList(),
+          items: items
+              .map((item) =>
+                  DropdownMenuItem(value: item, child: Text(item)))
+              .toList(),
         ),
       ),
     );
   }
 
-  Widget _buildNewsCard(BuildContext context, NewsEntry news, Color cardColor) {
-    const String baseUrl = 'http://127.0.0.1:8000';
+  Widget _buildNewsCard(
+      BuildContext context, NewsEntry news, Color cardColor) {
+    const String baseUrl =
+        'https://raihan-maulana41-eplradar.pbp.cs.ui.ac.id';
 
     return Card(
       color: cardColor,
@@ -277,11 +309,16 @@ class _NewsPageState extends State<NewsPage> {
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       clipBehavior: Clip.antiAlias,
       child: InkWell(
-        onTap: () {
-          Navigator.push(
+        onTap: () async {
+          final result = await Navigator.push(
             context,
-            MaterialPageRoute(builder: (_) => NewsDetailPage(news: news)),
+            MaterialPageRoute(
+                builder: (_) => NewsDetailPage(news: news)),
           );
+          
+          if (result == true) {
+            setState(() {});
+          }
         },
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -304,17 +341,23 @@ class _NewsPageState extends State<NewsPage> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text(news.category, style: const TextStyle(color: Colors.grey, fontSize: 12)),
+                      Text(news.category,
+                          style: const TextStyle(
+                              color: Colors.grey, fontSize: 12)),
                       Text(
                         "${news.createdAt.day}/${news.createdAt.month}/${news.createdAt.year}",
-                        style: const TextStyle(color: Colors.grey, fontSize: 12),
+                        style: const TextStyle(
+                            color: Colors.grey, fontSize: 12),
                       ),
                     ],
                   ),
                   const SizedBox(height: 8),
                   Text(
                     news.title,
-                    style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
+                    style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 8),
                   Text(

@@ -65,7 +65,7 @@ class _AddNewsPageState extends State<AddNewsPage> {
                     _formKey.currentState!.save();
 
                     final response = await request.postJson(
-                      "http://127.0.0.1:8000/news/create-news-flutter",
+                      "https://raihan-maulana41-eplradar.pbp.cs.ui.ac.id/news/create-news-flutter",
                       jsonEncode({
                         "title": title,
                         "content": content,
