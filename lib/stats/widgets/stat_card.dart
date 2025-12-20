@@ -21,6 +21,13 @@ class StatCard extends StatelessWidget {
     const placeholder =
         "https://upload.wikimedia.org/wikipedia/commons/a/a3/Image-not-found.png";
 
+    const String proxyBase =
+        "https://raihan-maulana41-eplradar.pbp.cs.ui.ac.id/proxy-image/";
+
+    String proxyImage(String url) {
+      return "$proxyBase?url=${Uri.encodeComponent(url)}";
+    }
+
     return Container(
       padding: const EdgeInsets.all(16),
       margin: const EdgeInsets.only(bottom: 12),
@@ -33,10 +40,13 @@ class StatCard extends StatelessWidget {
           ClipRRect(
             borderRadius: BorderRadius.circular(12),
             child: Image.network(
-              image.isNotEmpty ? image : placeholder,
+              image.isNotEmpty ? proxyImage(image) : placeholder,
               width: 70,
               height: 70,
               fit: BoxFit.contain,
+              errorBuilder: (context, error, stackTrace) {
+                return Image.network(placeholder);
+              },
             ),
           ),
           const SizedBox(width: 14),
