@@ -45,12 +45,9 @@ class _ClubDetailScreenState extends State<ClubDetailScreen> {
     });
   }
 
-  // Helper function to get correct logo filename
   String _getLogoUrl(String logoFilename) {
     final cleanFilename = logoFilename.replaceAll('.png', '');
-    // Replace underscore with space (karena file di server pakai spasi)
     final filenameWithSpace = cleanFilename.replaceAll('_', ' ');
-    // URL encode spaces to %20
     final encodedFilename = Uri.encodeComponent(filenameWithSpace);
     return 'https://raihan-maulana41-eplradar.pbp.cs.ui.ac.id/static/img/club-matches/$encodedFilename.png';
   }
@@ -266,6 +263,8 @@ class _ClubDetailScreenState extends State<ClubDetailScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final request = context.watch<CookieRequest>();
+    final isLoggedIn = request.loggedIn;
     final logoUrl = _getLogoUrl(widget.club.logoFilename);
 
     return Scaffold(
@@ -321,8 +320,6 @@ class _ClubDetailScreenState extends State<ClubDetailScreen> {
                         );
                       },
                       errorBuilder: (context, error, stackTrace) {
-                        debugPrint('Error loading logo for ${widget.club.namaKlub}');
-                        debugPrint('URL: $logoUrl');
                         return const Icon(
                           Icons.shield,
                           size: 80,
@@ -375,7 +372,6 @@ class _ClubDetailScreenState extends State<ClubDetailScreen> {
                     ),
                     const SizedBox(height: 24),
 
-                    // Stats Grid
                     _buildStatRow('Jumlah Match', widget.club.totalMatches.toString(), Colors.white),
                     const SizedBox(height: 16),
                     _buildStatRow('Win', widget.club.jumlahWin.toString(), const Color(0xFF22C55E)),
@@ -406,70 +402,110 @@ class _ClubDetailScreenState extends State<ClubDetailScreen> {
                   ),
                   const SizedBox(height: 16),
 
-                  // Comment Input
-                  Container(
-                    padding: const EdgeInsets.all(20),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFF2B2D31),
-                      borderRadius: BorderRadius.circular(16),
-                      border: Border.all(
-                        color: const Color(0xFF3F3F46),
-                        width: 1,
+                  // Comment Input - Conditional based on login status
+                  if (!isLoggedIn)
+                    Container(
+                      padding: const EdgeInsets.all(20),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF2B2D31),
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(
+                          color: const Color(0xFF3F3F46),
+                          width: 1,
+                        ),
+                      ),
+                      child: Column(
+                        children: [
+                          Icon(
+                            Icons.lock_outline,
+                            size: 48,
+                            color: Colors.grey[600],
+                          ),
+                          const SizedBox(height: 12),
+                          Text(
+                            'Login untuk berkomentar',
+                            style: TextStyle(
+                              fontSize: 16,
+                              color: Colors.grey[400],
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            'Anda harus login terlebih dahulu untuk dapat memberikan komentar',
+                            style: TextStyle(
+                              fontSize: 14,
+                              color: Colors.grey[600],
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                        ],
+                      ),
+                    )
+                  else
+                    Container(
+                      padding: const EdgeInsets.all(20),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF2B2D31),
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(
+                          color: const Color(0xFF3F3F46),
+                          width: 1,
+                        ),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          TextField(
+                            controller: _commentController,
+                            style: const TextStyle(color: Colors.white),
+                            decoration: InputDecoration(
+                              hintText: 'Tulis komentar...',
+                              hintStyle: TextStyle(color: Colors.grey[500]),
+                              filled: true,
+                              fillColor: const Color(0xFF3F3F46),
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12),
+                                borderSide: BorderSide.none,
+                              ),
+                              contentPadding: const EdgeInsets.all(16),
+                            ),
+                            maxLines: 3,
+                            enabled: !_isSubmitting,
+                          ),
+                          const SizedBox(height: 12),
+                          Align(
+                            alignment: Alignment.centerRight,
+                            child: ElevatedButton.icon(
+                              onPressed: _isSubmitting ? null : _submitComment,
+                              icon: _isSubmitting
+                                  ? const SizedBox(
+                                      width: 16,
+                                      height: 16,
+                                      child: CircularProgressIndicator(
+                                        strokeWidth: 2,
+                                        color: Colors.white,
+                                      ),
+                                    )
+                                  : const Icon(Icons.send, size: 18),
+                              label: Text(_isSubmitting ? 'Posting...' : 'Post'),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: const Color(0xFF3B82F6),
+                                foregroundColor: Colors.white,
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 24,
+                                  vertical: 12,
+                                ),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                                elevation: 0,
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
                     ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        TextField(
-                          controller: _commentController,
-                          style: const TextStyle(color: Colors.white),
-                          decoration: InputDecoration(
-                            hintText: 'Tulis komentar...',
-                            hintStyle: TextStyle(color: Colors.grey[500]),
-                            filled: true,
-                            fillColor: const Color(0xFF3F3F46),
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(12),
-                              borderSide: BorderSide.none,
-                            ),
-                            contentPadding: const EdgeInsets.all(16),
-                          ),
-                          maxLines: 3,
-                          enabled: !_isSubmitting,
-                        ),
-                        const SizedBox(height: 12),
-                        Align(
-                          alignment: Alignment.centerRight,
-                          child: ElevatedButton.icon(
-                            onPressed: _isSubmitting ? null : _submitComment,
-                            icon: _isSubmitting
-                                ? const SizedBox(
-                                    width: 16,
-                                    height: 16,
-                                    child: CircularProgressIndicator(
-                                      strokeWidth: 2,
-                                      color: Colors.white,
-                                    ),
-                                  )
-                                : const Icon(Icons.send, size: 18),
-                            label: Text(_isSubmitting ? 'Posting...' : 'Post'),
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: const Color(0xFF3B82F6),
-                              foregroundColor: Colors.white,
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 24,
-                                vertical: 12,
-                              ),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(10),
-                              ),
-                              elevation: 0,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
 
                   const SizedBox(height: 24),
 
