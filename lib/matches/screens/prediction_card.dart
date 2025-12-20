@@ -4,8 +4,18 @@ import 'package:intl/intl.dart';
 
 class PredictionCard extends StatelessWidget {
   final ScorePredictionModel prediction;
+  final VoidCallback? onEdit;
+  final VoidCallback? onDelete;
+  final bool isOwner;
 
-  const PredictionCard({super.key, required this.prediction});
+
+  const PredictionCard({
+    super.key,
+    required this.prediction,
+    this.onEdit,
+    this.onDelete,
+    required this.isOwner,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -165,6 +175,34 @@ class PredictionCard extends StatelessWidget {
           ),
 
           const SizedBox(height: 16),
+
+          if (isOwner)
+            Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                GestureDetector(
+                  onTap: onEdit,
+                  child: const Text(
+                    'Edit',
+                    style: TextStyle(
+                      color: Colors.amber,
+                      fontSize: 13,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 16),
+                GestureDetector(
+                  onTap: onDelete,
+                  child: const Text(
+                    'Hapus',
+                    style: TextStyle(
+                      color: Colors.redAccent,
+                      fontSize: 13,
+                    ),
+                  ),
+                ),
+              ],
+            ),
         ],
       ),
     );

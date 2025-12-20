@@ -1,4 +1,3 @@
-// lib/main.dart
 import 'package:eplradar_mobile/screens/menu.dart';
 import 'package:flutter/material.dart';
 import 'package:pbp_django_auth/pbp_django_auth.dart';
