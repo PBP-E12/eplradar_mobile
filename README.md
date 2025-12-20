@@ -67,3 +67,5 @@ Membuat endpoint di proyek django, lalu ambil data nya dan parsing ke JSON. Sete
 ## 🎨 Link Figma (Prototype Desain)
 🔗 [Figma Prototype - EPLRadar](https://www.figma.com/design/B5YHzIHcIlUCL9HPCaezqr/TK-PAS-PBP?node-id=0-1&t=RcLJKwgde4rSV4Mg-1)
 
+Badge: [![Build Status](https://app.bitrise.io/app/b24f41de-ef08-4119-ba0a-6e750a1e4982/status.svg?token=kWuT8dPNoPVGrqg_ukqzQA&branch=master)](https://app.bitrise.io/app/b24f41de-ef08-4119-ba0a-6e750a1e4982)
+
