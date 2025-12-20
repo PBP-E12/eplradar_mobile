@@ -8,7 +8,6 @@ class PredictionCard extends StatelessWidget {
   final VoidCallback? onDelete;
   final bool isOwner;
 
-
   const PredictionCard({
     super.key,
     required this.prediction,
