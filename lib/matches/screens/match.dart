@@ -27,6 +27,13 @@ class _MatchScreenState extends State<MatchScreen> {
 
   int? selectedWeek;
 
+  MatchModel? selectedMatch;
+  int homeScore = 0;
+  int awayScore = 0;
+  int userId = 1;
+
+  bool get isLoggedIn => userId != null;
+
   @override
   void initState() {
     super.initState();
@@ -49,7 +56,7 @@ class _MatchScreenState extends State<MatchScreen> {
 
     try {
       final response = await http.get(
-        Uri.parse('http://localhost:8000/matches/api/klasemen/'),
+        Uri.parse('https://raihan-maulana41-eplradar.pbp.cs.ui.ac.id/matches/api/klasemen/'),
       );
 
       if (response.statusCode == 200) {
@@ -79,7 +86,7 @@ class _MatchScreenState extends State<MatchScreen> {
 
     try {
       final response = await http.get(
-        Uri.parse('http://localhost:8000/matches/api/matches/'),
+        Uri.parse('https://raihan-maulana41-eplradar.pbp.cs.ui.ac.id/matches/api/matches/'),
       );
 
       if (response.statusCode == 200) {
@@ -110,7 +117,7 @@ class _MatchScreenState extends State<MatchScreen> {
 
     try {
       final response = await http.get(
-        Uri.parse('http://localhost:8000/matches/api/predictions/'),
+        Uri.parse('https://raihan-maulana41-eplradar.pbp.cs.ui.ac.id/matches/api/predictions/'),
       );
 
       if (response.statusCode == 200) {
@@ -140,13 +147,13 @@ class _MatchScreenState extends State<MatchScreen> {
     return Scaffold(
       endDrawer: RightDrawer(),
       backgroundColor: const Color(0xFF1A1C1E),
-      appBar: AppBar(
-        title: const Text(
-          'EPL Radar',
-          style: TextStyle(color: Colors.white),
-        ),
-        backgroundColor: const Color(0xFF333438),
-      ),
+      // appBar: AppBar(
+      //   title: const Text(
+      //     'EPL Radar',
+      //     style: TextStyle(color: Colors.white),
+      //   ),
+      //   backgroundColor: const Color(0xFF333438),
+      // ),
       body: RefreshIndicator(
         onRefresh: fetchAllData,
         color: const Color(0xFF3247B1),
@@ -171,7 +178,7 @@ class _MatchScreenState extends State<MatchScreen> {
               const SizedBox(height: 24),
               
               // Prediksi
-              _buildSectionHeader('Prediksi'),
+              _buildPredictionHeader(),
               const SizedBox(height: 4),
               _buildPredictionsSection(),
               
@@ -208,16 +215,16 @@ class _MatchScreenState extends State<MatchScreen> {
 
     return Container(
       height: 40,
-      padding: const EdgeInsets.symmetric(horizontal: 20),
+      padding: const EdgeInsets.symmetric(horizontal: 16),
       decoration: BoxDecoration(
-        color: const Color(0xFF333438),
-        borderRadius: BorderRadius.circular(12),
+        color: const Color(0xFF3247B1),
+        borderRadius: BorderRadius.circular(28),
       ),
       child: DropdownButtonHideUnderline(
         child: DropdownButton<int?>(
           value: selectedWeek,
           isDense: true,
-          dropdownColor: const Color(0xFF333438),
+          dropdownColor: const Color(0xFF3247B1),
           style: const TextStyle(color: Colors.white, fontSize: 12),
           items: [
             const DropdownMenuItem<int?>(
@@ -569,8 +576,234 @@ class _MatchScreenState extends State<MatchScreen> {
     }
 
     return Column(
-      children: predictions.map((pred) => PredictionCard(prediction: pred)).toList(),
+      children: predictions.map((pred) {
+        return PredictionCard(
+          prediction: pred,
+          isOwner: pred.user.id == userId,
+          onEdit: () {
+            // isi nilai awal
+            selectedMatch = matches.firstWhere(
+              (m) => m.id == pred.match.id,
+            );
+            homeScore = pred.homeScorePrediction;
+            awayScore = pred.awayScorePrediction;
+
+            _showPredictionDialog();
+          },
+          onDelete: () {
+            deletePrediction(pred.id);
+          },
+        );
+      }).toList(),
     );
+  }
+
+  Widget _buildPredictionHeader() {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+      child: Row(
+        children: [
+          const Text(
+            'Prediksi',
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          const Spacer(),
+          IconButton(
+            icon: const Icon(Icons.add, color: Colors.white),
+            onPressed: isLoggedIn ? _showPredictionDialog : () {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('Silakan login untuk membuat prediksi'),
+                ),
+              );
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showPredictionDialog() {
+    selectedMatch = null;
+    homeScore = 0;
+    awayScore = 0;
+
+    showDialog(
+      context: context,
+      builder: (_) {
+        return Dialog(
+          backgroundColor: const Color(0xFF1A1C1E),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(20),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'Prediksi Skor',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 12),
+                const Text(
+                  'Tebak skor pertandingan tim favoritmu!',
+                  style: TextStyle(color: Colors.white54),
+                ),
+                const SizedBox(height: 20),
+
+                /// Dropdown Match
+                DropdownButtonFormField<MatchModel>(
+                  dropdownColor: const Color(0xFF333438),
+                  items: matches.map((m) {
+                    return DropdownMenuItem(
+                      value: m,
+                      child: Text(
+                        '${m.homeTeam} vs ${m.awayTeam}',
+                        style: const TextStyle(color: Colors.white),
+                      ),
+                    );
+                  }).toList(),
+                  onChanged: (v) => selectedMatch = v,
+                  decoration: _inputDecoration('Pilih Pertandingan'),
+                ),
+
+                const SizedBox(height: 20),
+
+                /// Score Input
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    _scoreBox(homeScore, (v) => homeScore = v),
+                    const Text(
+                      ':',
+                      style: TextStyle(color: Colors.white, fontSize: 22),
+                    ),
+                    _scoreBox(awayScore, (v) => awayScore = v),
+                  ],
+                ),
+
+                const SizedBox(height: 24),
+
+                Row(
+                  children: [
+                    Expanded(
+                      child: OutlinedButton(
+                        onPressed: () => Navigator.pop(context),
+                        child: const Text('Batal'),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: ElevatedButton(
+                        onPressed: _submitPrediction,
+                        child: const Text('Simpan Prediksi'),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _scoreBox(int value, Function(int) onChanged) {
+    return Container(
+      width: 60,
+      padding: const EdgeInsets.symmetric(vertical: 12),
+      decoration: BoxDecoration(
+        color: const Color(0xFF333438),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: TextField(
+        keyboardType: TextInputType.number,
+        textAlign: TextAlign.center,
+        style: const TextStyle(color: Colors.white, fontSize: 18),
+        decoration: const InputDecoration(border: InputBorder.none),
+        onChanged: (v) {
+          onChanged(int.tryParse(v) ?? 0);
+        },
+      ),
+    );
+  }
+
+  InputDecoration _inputDecoration(String label) {
+    return InputDecoration(
+      labelText: label,
+      labelStyle: const TextStyle(color: Colors.white70),
+      filled: true,
+      fillColor: const Color(0xFF333438),
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: BorderSide.none,
+      ),
+    );
+  }
+
+  Future<void> _submitPrediction() async {
+    if (selectedMatch == null) return;
+
+    final response = await http.post(
+      Uri.parse(
+        'https://raihan-maulana41-eplradar.pbp.cs.ui.ac.id/matches/api/predictions/create/',
+      ),
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: jsonEncode({
+        'user_id': userId,
+        'match_id': selectedMatch!.id,
+        'home_score_prediction': homeScore,
+        'away_score_prediction': awayScore,
+      }),
+    );
+
+    if (response.statusCode == 201) {
+      Navigator.pop(context);
+      fetchPredictions(); // reload list
+    } else {
+      final data = jsonDecode(response.body);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(data['message'] ?? 'Gagal menyimpan prediksi')),
+      );
+    }
+  }
+
+  Future<void> updatePrediction(int predictionId) async {
+    await http.put(
+      Uri.parse(
+        'https://raihan-maulana41-eplradar.pbp.cs.ui.ac.id/matches/api/predictions/$predictionId/update/',
+      ),
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode({
+        'home_score_prediction': homeScore,
+        'away_score_prediction': awayScore,
+      }),
+    );
+
+    fetchPredictions();
+  }
+
+  Future<void> deletePrediction(int predictionId) async {
+    await http.delete(
+      Uri.parse(
+        'https://raihan-maulana41-eplradar.pbp.cs.ui.ac.id/matches/api/predictions/$predictionId/delete/',
+      ),
+    );
+
+    fetchPredictions();
   }
 
   String replaceSpacing(String clubName) {
