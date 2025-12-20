@@ -1,3 +1,4 @@
+import 'package:eplradar_mobile/widgets/right_drawer.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:pbp_django_auth/pbp_django_auth.dart';
@@ -42,18 +43,27 @@ class _ClubListScreenState extends State<ClubListScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      endDrawer: RightDrawer(),
       backgroundColor: const Color(0xFF1D1F22),
       appBar: AppBar(
         title: const Text(
           'Klub',
           style: TextStyle(
-            fontWeight: FontWeight.bold,
             color: Colors.white,
+            fontWeight: FontWeight.bold,
           ),
         ),
+        centerTitle: true,
         backgroundColor: const Color(0xFF1D1F22),
         elevation: 0,
-        iconTheme: const IconThemeData(color: Colors.white),
+        actions: [
+          Builder(
+            builder: (context) => IconButton(
+              icon: const Icon(Icons.menu, color: Colors.white),
+              onPressed: () => Scaffold.of(context).openEndDrawer(),
+            ),
+          ),
+        ],
       ),
       body: RefreshIndicator(
         onRefresh: () async {

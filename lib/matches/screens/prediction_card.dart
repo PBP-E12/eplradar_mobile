@@ -8,7 +8,6 @@ class PredictionCard extends StatelessWidget {
   final VoidCallback? onDelete;
   final bool isOwner;
 
-
   const PredictionCard({
     super.key,
     required this.prediction,
@@ -145,7 +144,7 @@ class PredictionCard extends StatelessWidget {
               Expanded(
                 child: Column(
                   children: [
-                    Image.network(
+                    Image.asset(
                       'images/clubs/${replaceSpacing(prediction.match.awayTeam)}.png',
                       width: 40,
                       height: 40,
@@ -209,6 +208,10 @@ class PredictionCard extends StatelessWidget {
   }
 
   String replaceSpacing(String clubName) {
-    return clubName.toLowerCase().replaceAll(' ', '_');
+    String result = clubName.toLowerCase();
+    if(result.contains(' ')){
+      return result.replaceAll(' ', '_');
+    }
+    return result;
   }
 }

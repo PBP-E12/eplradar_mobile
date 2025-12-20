@@ -26,24 +26,24 @@ class MatchModel {
   });
 
   factory MatchModel.fromJson(Map<String, dynamic> json) => MatchModel(
-        id: json["id"],
-        homeTeam: json["home_team"],
-        awayTeam: json["away_team"],
-        homeScore: json["home_score"] ?? 0,
-        awayScore: json["away_score"] ?? 0,
-        week: json["week"],
-        matchDate: DateTime.parse(json["match_date"]),
-      );
+    id: json["id"],
+    homeTeam: json["home_team"],
+    awayTeam: json["away_team"],
+    homeScore: json["home_score"] ?? 0,
+    awayScore: json["away_score"] ?? 0,
+    week: json["week"],
+    matchDate: DateTime.parse(json["match_date"]),
+  );
 
   Map<String, dynamic> toJson() => {
-        "id": id,
-        "home_team": homeTeam,
-        "away_team": awayTeam,
-        "home_score": homeScore,
-        "away_score": awayScore,
-        "week": week,
-        "match_date": matchDate.toIso8601String(),
-      };
+    "id": id,
+    "home_team": homeTeam,
+    "away_team": awayTeam,
+    "home_score": homeScore,
+    "away_score": awayScore,
+    "week": week,
+    "match_date": matchDate.toIso8601String(),
+  };
 }
 
 // Score Prediction Model
@@ -65,16 +65,16 @@ class ScorePredictionModel {
   });
 
   factory ScorePredictionModel.fromJson(Map<String, dynamic> json) =>
-      ScorePredictionModel(
-        id: json["id"],
-        user: UserData.fromJson(json["user"]),
-        match: MatchData.fromJson(json["match"]),
-        homeScorePrediction: json["home_score_prediction"],
-        awayScorePrediction: json["away_score_prediction"],
-        createdAt: DateTime.parse(json["created_at"]),
-      );
+    ScorePredictionModel(
+      id: json["id"],
+      user: UserData.fromJson(json["user"]),
+      match: MatchData.fromJson(json["match"]),
+      homeScorePrediction: json["home_score_prediction"],
+      awayScorePrediction: json["away_score_prediction"],
+      createdAt: DateTime.parse(json["created_at"]),
+    );
 
-  Map<String, dynamic> toJson() => {
+    Map<String, dynamic> toJson() => {
         "id": id,
         "user": user.toJson(),
         "match": match.toJson(),
@@ -94,15 +94,15 @@ class UserData {
   });
 
   factory UserData.fromJson(Map<String, dynamic> json) => UserData(
-        id: json["id"],
-        username: json["username"],
-      );
+    id: json["id"],
+    username: json["username"],
+  );
 
   Map<String, dynamic> toJson() => {
-        "id": id,
-        "username": username,
-      };
-}
+      "id": id,
+      "username": username,
+    };
+  }
 
 class MatchData {
   final int id;
@@ -118,16 +118,16 @@ class MatchData {
   });
 
   factory MatchData.fromJson(Map<String, dynamic> json) => MatchData(
-        id: json["id"],
-        homeTeam: json["home_team"],
-        awayTeam: json["away_team"],
-        matchDate: DateTime.parse(json["match_date"]),
-      );
+    id: json["id"],
+    homeTeam: json["home_team"],
+    awayTeam: json["away_team"],
+    matchDate: DateTime.parse(json["match_date"]),
+  );
 
   Map<String, dynamic> toJson() => {
-        "id": id,
-        "home_team": homeTeam,
-        "away_team": awayTeam,
-        "match_date": matchDate.toIso8601String(),
-      };
+    "id": id,
+    "home_team": homeTeam,
+    "away_team": awayTeam,
+    "match_date": matchDate.toIso8601String(),
+  };
 }

@@ -1,9 +1,14 @@
+import 'package:eplradar_mobile/screens/login.dart';
 import 'package:eplradar_mobile/widgets/right_drawer.dart';
 import 'package:flutter/material.dart';
 import 'package:eplradar_mobile/matches/model/match_model.dart';
 import 'package:eplradar_mobile/matches/screens/prediction_card.dart';
 import 'package:http/http.dart' as http;
+import 'package:pbp_django_auth/pbp_django_auth.dart';
+
 import 'dart:convert';
+
+import 'package:provider/provider.dart';
 
 class MatchScreen extends StatefulWidget {
   const MatchScreen({super.key});
@@ -20,7 +25,9 @@ class _MatchScreenState extends State<MatchScreen> {
   bool isLoadingKlasemen = true;
   bool isLoadingMatches = true;
   bool isLoadingPredictions = true;
-  
+
+  ScorePredictionModel? editingPrediction;
+
   String errorKlasemen = '';
   String errorMatches = '';
   String errorPredictions = '';
@@ -32,7 +39,10 @@ class _MatchScreenState extends State<MatchScreen> {
   int awayScore = 0;
   int userId = 1;
 
-  bool get isLoggedIn => userId != null;
+  late CookieRequest request;
+
+  bool get isLoggedIn => request.loggedIn;
+
 
   @override
   void initState() {
@@ -147,13 +157,26 @@ class _MatchScreenState extends State<MatchScreen> {
     return Scaffold(
       endDrawer: RightDrawer(),
       backgroundColor: const Color(0xFF1A1C1E),
-      // appBar: AppBar(
-      //   title: const Text(
-      //     'EPL Radar',
-      //     style: TextStyle(color: Colors.white),
-      //   ),
-      //   backgroundColor: const Color(0xFF333438),
-      // ),
+      appBar: AppBar(
+        title: const Text(
+          'Match',
+          style: TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        centerTitle: true,
+        backgroundColor: const Color(0xFF1D1F22),
+        elevation: 0,
+        actions: [
+          Builder(
+            builder: (context) => IconButton(
+              icon: const Icon(Icons.menu, color: Colors.white),
+              onPressed: () => Scaffold.of(context).openEndDrawer(),
+            ),
+          ),
+        ],
+      ),
       body: RefreshIndicator(
         onRefresh: fetchAllData,
         color: const Color(0xFF3247B1),
@@ -162,6 +185,7 @@ class _MatchScreenState extends State<MatchScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              _buildHeroSection(),
               // Klasemen
               const SizedBox(height: 20),
               _buildSectionHeader('Klasemen'),
@@ -186,6 +210,44 @@ class _MatchScreenState extends State<MatchScreen> {
             ],
           ),
         ),
+      ),
+    );
+  }
+
+  Widget _buildHeroSection() {
+    return Container(
+      height: 280,
+      decoration: const BoxDecoration(
+        image: DecorationImage(
+          image: AssetImage("assets/stats.png"),
+          fit: BoxFit.cover,
+          opacity: 0.75,
+        ),
+      ),
+      padding: const EdgeInsets.only(left: 24, right: 24, bottom: 28),
+      alignment: Alignment.bottomLeft,
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.end,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: const [
+          Text(
+            "Match",
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 42,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          SizedBox(height: 8),
+          Text(
+            "Dapatkan informasi terkait pertandingan dan klasemen tim favoritmu di musim ini!",
+            style: TextStyle(
+              color: Colors.white70,
+              fontSize: 15,
+            ),
+          ),
+          SizedBox(height: 72),
+        ],
       ),
     );
   }
@@ -546,6 +608,11 @@ class _MatchScreenState extends State<MatchScreen> {
   }
 
   Widget _buildPredictionsSection() {
+    final req = context.watch<CookieRequest>();
+    final String? username = req.jsonData["username"];
+    final bool isLoggedIn =
+        req.loggedIn && username != null && username.trim().isNotEmpty;
+
     if (isLoadingPredictions) {
       return const Center(
         child: Padding(
@@ -565,40 +632,79 @@ class _MatchScreenState extends State<MatchScreen> {
       );
     }
 
-    if (predictions.isEmpty) {
-      return const Padding(
-        padding: EdgeInsets.all(16.0),
-        child: Text(
-          'Belum ada prediksi',
-          style: TextStyle(color: Colors.white54),
-        ),
-      );
-    }
-
     return Column(
-      children: predictions.map((pred) {
-        return PredictionCard(
-          prediction: pred,
-          isOwner: pred.user.id == userId,
-          onEdit: () {
-            // isi nilai awal
-            selectedMatch = matches.firstWhere(
-              (m) => m.id == pred.match.id,
-            );
-            homeScore = pred.homeScorePrediction;
-            awayScore = pred.awayScorePrediction;
+      children: [
+        if (!isLoggedIn)
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
+            child: Container(
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(vertical: 20),
+              decoration: BoxDecoration(
+                color: const Color(0xFF2A2A2A),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Column(
+                children: [
+                  const Text(
+                    'Login untuk menambahkan prediksi',
+                    style: TextStyle(color: Colors.grey),
+                  ),
+                  const SizedBox(height: 12),
+                  ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.blueAccent,
+                      foregroundColor: Colors.white,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(24),
+                      ),
+                    ),
+                    onPressed: () {
+                      Navigator.push(context, MaterialPageRoute(builder: (context) => LoginPage()));
+                    },
+                    child: const Text('Login'),
+                  ),
+                ],
+              ),
+            ),
+          ),
 
-            _showPredictionDialog();
-          },
-          onDelete: () {
-            deletePrediction(pred.id);
-          },
-        );
-      }).toList(),
+        if (predictions.isEmpty)
+          const Padding(
+            padding: EdgeInsets.all(16.0),
+            child: Text(
+              'Belum ada prediksi',
+              style: TextStyle(color: Colors.grey),
+            ),
+          )
+        else
+          ...predictions.map((pred) {
+            return PredictionCard(
+              prediction: pred,
+              isOwner: username != null && pred.user.username == username,
+              onEdit: () {
+                editingPrediction = pred;
+                selectedMatch = matches.firstWhere((m) => m.id == pred.match.id);
+                homeScore = pred.homeScorePrediction;
+                awayScore = pred.awayScorePrediction;
+
+                _showPredictionDialog();
+              },
+              onDelete: () {
+                deletePrediction(pred.id);
+              },
+            );
+          }).toList(),
+      ],
     );
   }
 
   Widget _buildPredictionHeader() {
+    final req = context.watch<CookieRequest>();
+    final String? username = req.jsonData["username"];
+    final bool isLoggedIn =
+        req.loggedIn && username != null && username.trim().isNotEmpty;
+
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
       child: Row(
@@ -612,26 +718,18 @@ class _MatchScreenState extends State<MatchScreen> {
             ),
           ),
           const Spacer(),
-          IconButton(
-            icon: const Icon(Icons.add, color: Colors.white),
-            onPressed: isLoggedIn ? _showPredictionDialog : () {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Silakan login untuk membuat prediksi'),
-                ),
-              );
-            },
-          ),
+
+          if (isLoggedIn)
+            IconButton(
+              icon: const Icon(Icons.add, color: Colors.white),
+              onPressed: _showPredictionDialog,
+            ),
         ],
       ),
     );
   }
 
   void _showPredictionDialog() {
-    selectedMatch = null;
-    homeScore = 0;
-    awayScore = 0;
-
     showDialog(
       context: context,
       builder: (_) {
@@ -698,6 +796,14 @@ class _MatchScreenState extends State<MatchScreen> {
                   children: [
                     Expanded(
                       child: OutlinedButton(
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: Colors.redAccent,
+                          side: const BorderSide(color: Colors.redAccent),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(24),
+                          ),
+                          padding: const EdgeInsets.symmetric(vertical: 14),
+                        ),
                         onPressed: () => Navigator.pop(context),
                         child: const Text('Batal'),
                       ),
@@ -705,6 +811,15 @@ class _MatchScreenState extends State<MatchScreen> {
                     const SizedBox(width: 12),
                     Expanded(
                       child: ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.blueAccent,
+                          foregroundColor: Colors.white,
+                          elevation: 2,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(24),
+                          ),
+                          padding: const EdgeInsets.symmetric(vertical: 14),
+                        ),
                         onPressed: _submitPrediction,
                         child: const Text('Simpan Prediksi'),
                       ),
@@ -755,29 +870,53 @@ class _MatchScreenState extends State<MatchScreen> {
   Future<void> _submitPrediction() async {
     if (selectedMatch == null) return;
 
-    final response = await http.post(
-      Uri.parse(
-        'https://raihan-maulana41-eplradar.pbp.cs.ui.ac.id/matches/api/predictions/create/',
-      ),
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: jsonEncode({
-        'user_id': userId,
-        'match_id': selectedMatch!.id,
-        'home_score_prediction': homeScore,
-        'away_score_prediction': awayScore,
-      }),
-    );
+    final req = context.read<CookieRequest>();
 
-    if (response.statusCode == 201) {
-      Navigator.pop(context);
-      fetchPredictions(); // reload list
-    } else {
-      final data = jsonDecode(response.body);
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(data['message'] ?? 'Gagal menyimpan prediksi')),
+    if(editingPrediction == null){
+      final response = await req.postJson(
+        'https://raihan-maulana41-eplradar.pbp.cs.ui.ac.id/matches/api/predictions/create/',
+        jsonEncode({
+          'match_id': selectedMatch!.id,
+          'home_score_prediction': homeScore,
+          'away_score_prediction': awayScore,
+        }),
       );
+
+      if (response['status'] == 'success') {
+        Navigator.pop(context);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Prediksi Berhasil Disimpan'),
+          ),
+        );
+        fetchPredictions();
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(response['message'] ?? 'Gagal menyimpan prediksi'),
+          ),
+        );
+      }
+    }
+    else{
+      final response = await req.postJson(
+        'https://raihan-maulana41-eplradar.pbp.cs.ui.ac.id/matches/api/predictions/${editingPrediction!.id}/update/',
+        jsonEncode({
+          'home_score_prediction': homeScore,
+          'away_score_prediction': awayScore,
+        }),
+      );
+
+      if (response['status'] == 'success') {
+        editingPrediction = null;
+        Navigator.pop(context);
+        fetchPredictions();
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Prediksi Berhasil Diedit'),
+          ),
+        );
+      }
     }
   }
 
@@ -804,6 +943,11 @@ class _MatchScreenState extends State<MatchScreen> {
     );
 
     fetchPredictions();
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('Berhasil Menghapus Prediksi'),
+      ),
+    );
   }
 
   String replaceSpacing(String clubName) {

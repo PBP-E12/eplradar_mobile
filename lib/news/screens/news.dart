@@ -1,3 +1,4 @@
+import 'package:eplradar_mobile/widgets/right_drawer.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:pbp_django_auth/pbp_django_auth.dart';
@@ -76,12 +77,27 @@ class _NewsPageState extends State<NewsPage> {
     const Color cardColor = Color(0xFF2A2D32);
 
     return Scaffold(
+      endDrawer: RightDrawer(),
       backgroundColor: bgColor,
       appBar: AppBar(
-        title: const Text('EPL Radar'),
-        backgroundColor: Colors.black,
-        foregroundColor: Colors.white,
+        title: const Text(
+          'Berita',
+          style: TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        centerTitle: true,
+        backgroundColor: const Color(0xFF1D1F22),
         elevation: 0,
+        actions: [
+          Builder(
+            builder: (context) => IconButton(
+              icon: const Icon(Icons.menu, color: Colors.white),
+              onPressed: () => Scaffold.of(context).openEndDrawer(),
+            ),
+          ),
+        ],
       ),
       body: SingleChildScrollView(
         controller: _scrollController,

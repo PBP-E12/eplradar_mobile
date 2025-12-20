@@ -17,17 +17,26 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   @override
   Widget build(BuildContext context) {
+
     final req = context.watch<CookieRequest>();
 
     return Scaffold(
       backgroundColor: const Color(0xFF1D1F22),
       appBar: AppBar(
+        title: const Text(
+          'Home',
+          style: TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        centerTitle: true,
         backgroundColor: const Color(0xFF1D1F22),
         elevation: 0,
         actions: [
           Builder(
             builder: (context) => IconButton(
-              icon: const Icon(Icons.menu),
+              icon: const Icon(Icons.menu, color: Colors.white),
               onPressed: () => Scaffold.of(context).openEndDrawer(),
             ),
           ),
