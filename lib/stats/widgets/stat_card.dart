@@ -18,14 +18,15 @@ class StatCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    const placeholder =
-        "https://upload.wikimedia.org/wikipedia/commons/a/a3/Image-not-found.png";
 
-    const String proxyBase =
-        "https://raihan-maulana41-eplradar.pbp.cs.ui.ac.id/proxy-image/";
+    const String domain = "https://raihan-maulana41-eplradar.pbp.cs.ui.ac.id";
 
-    String proxyImage(String url) {
-      return "$proxyBase?url=${Uri.encodeComponent(url)}";
+    String resolveImage(String path) {
+      if (path.startsWith("http")) {
+        return path;
+      }
+
+      return "$domain$path";
     }
 
     return Container(
@@ -40,12 +41,17 @@ class StatCard extends StatelessWidget {
           ClipRRect(
             borderRadius: BorderRadius.circular(12),
             child: Image.network(
-              image.isNotEmpty ? proxyImage(image) : placeholder,
+              resolveImage(image),
               width: 70,
               height: 70,
               fit: BoxFit.contain,
               errorBuilder: (context, error, stackTrace) {
-                return Image.network(placeholder);
+                return Image.network(
+                  "https://upload.wikimedia.org/wikipedia/commons/a/a3/Image-not-found.png",
+                  width: 70,
+                  height: 70,
+                  fit: BoxFit.contain,
+                );
               },
             ),
           ),
