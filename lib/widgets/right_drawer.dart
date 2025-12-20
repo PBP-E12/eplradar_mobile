@@ -1,3 +1,4 @@
+import 'package:eplradar_mobile/clubs/screens/club_list_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:pbp_django_auth/pbp_django_auth.dart';
@@ -78,7 +79,7 @@ class RightDrawer extends StatelessWidget {
             _item(context,
               icon: Icons.sports_soccer_sharp,
               title: "Klub",
-              page: const NewsPage()),
+              page: const ClubListScreen()),
           _item(context,
               icon: Icons.article_outlined,
               title: "Berita",
