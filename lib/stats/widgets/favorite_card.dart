@@ -35,8 +35,17 @@ class _FavoriteCardState extends State<FavoriteCard> {
 
   @override
   Widget build(BuildContext context) {
-    const placeholder =
+    const String domain = "https://raihan-maulana41-eplradar.pbp.cs.ui.ac.id";
+
+    const String placeholder =
         "https://upload.wikimedia.org/wikipedia/commons/a/a3/Image-not-found.png";
+
+    String resolveImage(String path) {
+      if (path.isEmpty) return placeholder;
+      if (path.startsWith("http")) return path;
+      if (path.startsWith("/")) return "$domain$path";
+      return "$domain/$path";
+    }
 
     return Container(
       padding: const EdgeInsets.all(16),
@@ -46,25 +55,35 @@ class _FavoriteCardState extends State<FavoriteCard> {
         borderRadius: BorderRadius.circular(14),
       ),
       child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           ClipRRect(
             borderRadius: BorderRadius.circular(10),
             child: Image.network(
-              widget.image.isNotEmpty ? widget.image : placeholder,
+              resolveImage(widget.image),
               width: 75,
               height: 75,
-              fit: BoxFit.contain,
+              fit: BoxFit.cover,
+              errorBuilder: (context, error, stackTrace) {
+                return Image.network(
+                  placeholder,
+                  width: 75,
+                  height: 75,
+                  fit: BoxFit.cover,
+                );
+              },
             ),
           ),
           const SizedBox(width: 14),
 
-          // Text
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
                   widget.name,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                   style: const TextStyle(
                     color: Colors.white,
                     fontWeight: FontWeight.bold,
@@ -72,6 +91,8 @@ class _FavoriteCardState extends State<FavoriteCard> {
                 ),
                 Text(
                   widget.club,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                   style: const TextStyle(color: Colors.grey, fontSize: 13),
                 ),
                 const SizedBox(height: 10),

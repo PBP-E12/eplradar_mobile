@@ -163,6 +163,7 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
                 if (favList != null)
                   ...favList!.favorites.map(
                     (f) => FavoriteCard(
+                      key: ValueKey(f.favId),
                       image: f.photo,
                       name: f.name,
                       club: f.club,
