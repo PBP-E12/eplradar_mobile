@@ -7,6 +7,7 @@ import '../services/club_service.dart';
 import 'club_detail_screen.dart';
 
 class ClubListScreen extends StatefulWidget {
+  static const routeName = '/clubs';
   const ClubListScreen({Key? key}) : super(key: key);
 
   @override

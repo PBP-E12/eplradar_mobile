@@ -7,6 +7,7 @@ import 'news_detail.dart';
 import 'add_news_form.dart';
 
 class NewsPage extends StatefulWidget {
+  static const routeName = '/news';
   const NewsPage({super.key});
 
   @override

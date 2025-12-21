@@ -11,6 +11,7 @@ import 'dart:convert';
 import 'package:provider/provider.dart';
 
 class MatchScreen extends StatefulWidget {
+  static const routeName = '/match';
   const MatchScreen({super.key});
 
   @override

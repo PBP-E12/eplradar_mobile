@@ -13,9 +13,6 @@ import '../screens/register.dart';
 class RightDrawer extends StatelessWidget {
   const RightDrawer({super.key});
 
-  static const String baseUrl =
-      "https://raihan-maulana41-eplradar.pbp.cs.ui.ac.id";
-
   @override
   Widget build(BuildContext context) {
     final request = context.watch<CookieRequest>();
@@ -45,14 +42,12 @@ class RightDrawer extends StatelessWidget {
                 const SizedBox(height: 8),
                 Text(
                   isLoggedIn ? "Hi, $username" : "Not Logged In",
-                  style:
-                      const TextStyle(color: Colors.white70, fontSize: 16),
+                  style: const TextStyle(color: Colors.white70, fontSize: 16),
                 ),
                 const SizedBox(height: 12),
                 const Text(
                   "Semua statistik, berita, dan data EPL lengkap.",
-                  style:
-                      TextStyle(color: Colors.white54, fontSize: 13),
+                  style: TextStyle(color: Colors.white54, fontSize: 13),
                 ),
               ],
             ),
@@ -60,30 +55,36 @@ class RightDrawer extends StatelessWidget {
 
           const SizedBox(height: 12),
 
-          _item(context,
-              icon: Icons.home_outlined,
-              title: "Home",
-              page: const MyHomePage()),
-          _item(context,
-              icon: Icons.newspaper,
-              title: "Match",
-              page: const MatchScreen()),
-          _item(context,
-              icon: Icons.analytics,
-              title: "Statistik",
-              page: const StatsHomeScreen()),
-           _item(context,
-              icon: Icons.person,
-              title: "Pemain",
-              page: const NewsPage()),
-            _item(context,
-              icon: Icons.sports_soccer_sharp,
-              title: "Klub",
-              page: const ClubListScreen()),
-          _item(context,
-              icon: Icons.article_outlined,
-              title: "Berita",
-              page: const NewsPage()),
+          _item(
+            context,
+            icon: Icons.home_outlined,
+            title: "Home",
+            routeName: MyHomePage.routeName,
+          ),
+          _item(
+            context,
+            icon: Icons.newspaper,
+            title: "Match",
+            routeName: MatchScreen.routeName,
+          ),
+          _item(
+            context,
+            icon: Icons.analytics,
+            title: "Statistik",
+            routeName: StatsHomeScreen.routeName,
+          ),
+          _item(
+            context,
+            icon: Icons.sports_soccer_sharp,
+            title: "Klub",
+            routeName: ClubListScreen.routeName,
+          ),
+          _item(
+            context,
+            icon: Icons.article_outlined,
+            title: "Berita",
+            routeName: NewsPage.routeName,
+          ),
 
           const Divider(
             color: Colors.white24,
@@ -92,13 +93,12 @@ class RightDrawer extends StatelessWidget {
             endIndent: 16,
           ),
 
-      
           if (!isLoggedIn)
             _item(
               context,
               icon: Icons.login,
               title: "Login",
-              page: const LoginPage(),
+              routeName: LoginPage.routeName,
               color: const Color(0xFF2563EB),
             ),
 
@@ -107,40 +107,38 @@ class RightDrawer extends StatelessWidget {
               context,
               icon: Icons.person_add_alt,
               title: "Register",
-              page: const RegisterPage(),
+              routeName: RegisterPage.routeName,
               color: const Color(0xFF2563EB),
             ),
 
           if (isLoggedIn)
             ListTile(
-              leading:
-                  const Icon(Icons.logout, color: Colors.redAccent),
+              leading: const Icon(Icons.logout, color: Colors.redAccent),
               title: const Text(
                 "Logout",
                 style: TextStyle(color: Colors.redAccent),
               ),
               onTap: () async {
-  Navigator.pop(context);
+                Navigator.pop(context);
 
-  final req = context.read<CookieRequest>();
+                final req = context.read<CookieRequest>();
 
-  try {
-    await req.logout(
-      "https://raihan-maulana41-eplradar.pbp.cs.ui.ac.id/auth/logout/",
-    );
+                try {
+                  await req.logout(
+                    "https://raihan-maulana41-eplradar.pbp.cs.ui.ac.id/auth/logout/",
+                  );
 
-    Navigator.pushAndRemoveUntil(
-      context,
-      MaterialPageRoute(builder: (_) => const LoginPage()),
-      (_) => false,
-    );
-  } catch (e) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text("Logout failed: $e")),
-    );
-  }
-},
-
+                  Navigator.pushNamedAndRemoveUntil(
+                    context,
+                    LoginPage.routeName,
+                    (_) => false,
+                  );
+                } catch (e) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text("Logout failed: $e")),
+                  );
+                }
+              },
             ),
 
           const SizedBox(height: 20),
@@ -149,12 +147,11 @@ class RightDrawer extends StatelessWidget {
     );
   }
 
-  
   Widget _item(
     BuildContext context, {
     required IconData icon,
     required String title,
-    required Widget page,
+    required String routeName,
     Color color = Colors.white,
   }) {
     return ListTile(
@@ -162,10 +159,11 @@ class RightDrawer extends StatelessWidget {
       title: Text(title, style: TextStyle(color: color)),
       onTap: () {
         Navigator.pop(context);
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (_) => page),
-        );
+
+        final currentRoute = ModalRoute.of(context)?.settings.name;
+        if (currentRoute != routeName) {
+          Navigator.pushNamed(context, routeName);
+        }
       },
     );
   }

@@ -8,6 +8,7 @@ import '../stats/models/stats_model.dart';
 import 'home_stat.dart';
 
 class MyHomePage extends StatefulWidget {
+  static const routeName = '/home';
   const MyHomePage({super.key});
 
   @override
