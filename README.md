@@ -66,4 +66,7 @@ Membuat endpoint di proyek django, lalu dikirim dalam bentuk JSON ke flutter dan
  [![Build Status](https://app.bitrise.io/app/7c9e9a70-f375-4b50-a59a-050c442ca234/status.svg?token=aS7DcvWAoB-566hxsIWl_A&branch=master)](https://app.bitrise.io/app/7c9e9a70-f375-4b50-a59a-050c442ca234)
 
 ## Download
-Download aplikasi versi terbaru: [Download APK](https://app.bitrise.io/app/7c9e9a70-f375-4b50-a59a-050c442ca234/installable-artifacts/d02831dbd4fda7a6/public-install-page/5a48b25df7b2110ca5529fc2fda80cbd)
+Download aplikasi versi terbaru: [Download APK](https://app.bitrise.io/app/7c9e9a70-f375-4b50-a59a-050c442ca234/installable-artifacts/285850a3f6c8652a/public-install-page/258fbda1266bfb36cac3ee87c317e893)
+
+## Video Promosi
+🔗 [Video](link yutup)
