@@ -7,6 +7,7 @@ import 'package:eplradar_mobile/matches/screens/match.dart';
 import '../screens/menu.dart';
 import '../news/screens/news.dart';
 import '../stats/screens/stats_home_screen.dart';
+import '../player/screens/playerspage.dart';
 import '../screens/login.dart';
 import '../screens/register.dart';
 
