@@ -85,7 +85,7 @@ class RightDrawer extends StatelessWidget {
             icon: Icons.person,
             title: "Pemain",
             routeName: PlayersPage.routeName,
-            ),
+          ),
           _item(
             context,
             icon: Icons.article_outlined,
@@ -137,8 +137,17 @@ class RightDrawer extends StatelessWidget {
 
                   Navigator.pushNamedAndRemoveUntil(
                     context,
-                    LoginPage.routeName,
+                    MyHomePage.routeName,  
                     (_) => false,
+                  );
+
+                  // Show success message
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text("Logout berhasil"),
+                      backgroundColor: Colors.green,
+                      duration: Duration(seconds: 2),
+                    ),
                   );
                 } catch (e) {
                   ScaffoldMessenger.of(context).showSnackBar(

@@ -299,8 +299,6 @@ class _ClubListScreenState extends State<ClubListScreen> {
                   },
                   errorBuilder: (context, error, stackTrace) {
                     // Debug: print URL yang error
-                    debugPrint('Error loading logo for ${club.namaKlub}');
-                    debugPrint('URL: $logoUrl');
                     return const Icon(
                       Icons.shield,
                       size: 60,
