@@ -44,7 +44,7 @@ class FavoriteService {
   /// Search pemain (untuk tambah favorit)
   static Future<List<dynamic>> searchPlayer(
       CookieRequest req, String query) async {
-    final json = await req.get("$baseUrl/players/search/?q=$query");
+    final json = await req.get("$baseUrl/player/search/?q=$query");
     return json["players"];
   }
 }
