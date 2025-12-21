@@ -16,11 +16,19 @@ class ClubListScreen extends StatefulWidget {
 
 class _ClubListScreenState extends State<ClubListScreen> {
   late Future<List<Club>> _clubsFuture;
+  late ScrollController _scrollController;
 
   @override
   void initState() {
     super.initState();
+     _scrollController = ScrollController();
     _loadClubs();
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
   }
 
   void _loadClubs() {
@@ -175,25 +183,39 @@ class _ClubListScreenState extends State<ClubListScreen> {
                       ),
                     ),
                     child: Column(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text(
-                          'Profil Klub Musim Ini',
-                          style: TextStyle(
-                            fontSize: 28,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white,
-                          ),
-                          textAlign: TextAlign.center,
-                        ),
-                        const SizedBox(height: 12),
                         Text(
-                          'Temukan info terlengkap terkait tim\nfavoritmu di liga inggris musim ini',
+                          "Match",
                           style: TextStyle(
-                            fontSize: 15,
-                            color: Colors.white.withOpacity(0.9),
-                            height: 1.4,
+                            color: Colors.white,
+                            fontSize: 42,
+                            fontWeight: FontWeight.bold,
                           ),
-                          textAlign: TextAlign.center,
+                        ),
+                        SizedBox(height: 8),
+                        Text(
+                          "Dapatkan informasi terkait pertandingan dan klasemen tim favoritmu di musim ini!",
+                          style: TextStyle(
+                            color: Colors.white70,
+                            fontSize: 15,
+                          ),
+                        ),
+                        SizedBox(height: 20),
+                        ElevatedButton(
+                          onPressed: () {
+                            _scrollController.animateTo(
+                              500,
+                              duration: const Duration(milliseconds: 800),
+                              curve: Curves.easeInOut,
+                            );
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.blueAccent,
+                            foregroundColor: Colors.white,
+                          ),
+                          child: const Text("Lihat Seluruh Pertandingan"),
                         ),
                       ],
                     ),
