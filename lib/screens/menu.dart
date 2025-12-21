@@ -6,6 +6,7 @@ import '../widgets/right_drawer.dart';
 import '../stats/services/stats_service.dart';
 import '../stats/models/stats_model.dart';
 import 'home_stat.dart';
+import 'home_news.dart';
 
 class MyHomePage extends StatefulWidget {
   static const routeName = '/home';
@@ -111,6 +112,10 @@ class _MyHomePageState extends State<MyHomePage> {
 
             const SizedBox(height: 32),
 
+            
+            const HomeNews(),
+
+            const SizedBox(height: 40),
           ],
         ),
       ),
