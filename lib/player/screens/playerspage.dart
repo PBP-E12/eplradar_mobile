@@ -21,10 +21,7 @@ class _PlayersPageState extends State<PlayersPage> {
     final response = await request.get(
         'https://raihan-maulana41-eplradar.pbp.cs.ui.ac.id/players/api/?team=$selectedTeamId');
 
-    if (response is List) {
-      return response.map((p) => Player.fromJson(p)).toList();
-    }
-    return [];
+    return PlayerListResponse.fromJson(response).players;
   }
 
   Future<List<Club>> fetchClubs(CookieRequest request) async {
@@ -64,26 +61,7 @@ class _PlayersPageState extends State<PlayersPage> {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Container(
-                  height: 250,
-                  width: double.infinity,
-                  decoration: const BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [Color(0xFF374151), Color(0xFF1F2937)],
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                    ),
-                    borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
-                  ),
-                  child: player.fullProfilePictureUrl.isNotEmpty
-                      ? Image.network(
-                    player.fullProfilePictureUrl,
-                    fit: BoxFit.contain,
-                    errorBuilder: (context, error, stackTrace) =>
-                    const Icon(Icons.person, size: 100, color: Colors.grey),
-                  )
-                      : const Icon(Icons.person, size: 100, color: Colors.grey),
-                ),
+                _buildDynamicPlayerImage(player, isDialog: true),
                 Padding(
                   padding: const EdgeInsets.all(24.0),
                   child: Column(
@@ -136,6 +114,40 @@ class _PlayersPageState extends State<PlayersPage> {
           ),
         );
       },
+    );
+  }
+
+  Widget _buildDynamicPlayerImage(Player player, {bool isDialog = false}) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        return AnimatedContainer(
+          duration: const Duration(milliseconds: 300),
+          width: double.infinity,
+          decoration: isDialog ? const BoxDecoration(
+            gradient: LinearGradient(
+              colors: [Color(0xFF374151), Color(0xFF1F2937)],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+            borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+          ) : null,
+          child: player.fullProfilePictureUrl.isNotEmpty
+              ? (player.isLocalAsset
+                  ? Image.asset(
+                      player.fullProfilePictureUrl,
+                      fit: BoxFit.contain,
+                      errorBuilder: (context, error, stackTrace) =>
+                          const SizedBox(height: 200, child: Icon(Icons.person, color: Colors.grey, size: 50)),
+                    )
+                  : Image.network(
+                      player.fullProfilePictureUrl,
+                      fit: BoxFit.contain,
+                      errorBuilder: (context, error, stackTrace) =>
+                          const SizedBox(height: 200, child: Icon(Icons.person, color: Colors.grey, size: 50)),
+                    ))
+              : const SizedBox(height: 200, child: Icon(Icons.person, color: Colors.grey, size: 50)),
+        );
+      }
     );
   }
 
@@ -313,7 +325,7 @@ class _PlayersPageState extends State<PlayersPage> {
                             (c) => c.id == player.team,
                         orElse: () => Club(id: 0, namaKlub: "Unknown", logoFilename: "", jumlahWin: 0, jumlahDraw: 0, jumlahLose: 0, totalMatches: 0, points: 0),
                       );
-                      return _buildPlayerCard(context, player, club, cardColor);
+                      return _buildPlayerCard(context, player, club, cardColor, request);
                     },
                   );
                 }
@@ -326,7 +338,7 @@ class _PlayersPageState extends State<PlayersPage> {
     );
   }
 
-  Widget _buildPlayerCard(BuildContext context, Player player, Club club, Color cardColor) {
+  Widget _buildPlayerCard(BuildContext context, Player player, Club club, Color cardColor, CookieRequest request) {
     return Card(
       color: cardColor,
       margin: const EdgeInsets.only(bottom: 20),
@@ -337,18 +349,7 @@ class _PlayersPageState extends State<PlayersPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            SizedBox(
-              height: 200,
-              width: double.infinity,
-              child: player.fullProfilePictureUrl.isNotEmpty
-                  ? Image.network(
-                player.fullProfilePictureUrl,
-                fit: BoxFit.cover,
-                errorBuilder: (context, error, stackTrace) =>
-                const Center(child: Icon(Icons.person, color: Colors.grey, size: 50)),
-              )
-                  : const Center(child: Icon(Icons.person, color: Colors.grey, size: 50)),
-            ),
+            _buildDynamicPlayerImage(player),
             Padding(
               padding: const EdgeInsets.all(16),
               child: Column(
