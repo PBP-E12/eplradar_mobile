@@ -163,31 +163,22 @@ class _ClubListScreenState extends State<ClubListScreen> {
                 children: [
                   // Header Section with Gradient
                   Container(
-                    width: double.infinity,
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 24,
-                      vertical: 32,
-                    ),
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                        colors: [
-                          const Color(0xFF3B82F6),
-                          const Color(0xFF2563EB),
-                        ],
-                      ),
-                      borderRadius: const BorderRadius.only(
-                        bottomLeft: Radius.circular(32),
-                        bottomRight: Radius.circular(32),
+                    height: 280,
+                    decoration: const BoxDecoration(
+                      image: DecorationImage(
+                        image: AssetImage("assets/clubs.png"),
+                        fit: BoxFit.cover,
+                        opacity: 0.75,
                       ),
                     ),
+                    padding: const EdgeInsets.only(left: 24, right: 24, bottom: 28),
+                    alignment: Alignment.bottomLeft,
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.end,
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          "Match",
+                          "Klub",
                           style: TextStyle(
                             color: Colors.white,
                             fontSize: 42,
@@ -196,7 +187,7 @@ class _ClubListScreenState extends State<ClubListScreen> {
                         ),
                         SizedBox(height: 8),
                         Text(
-                          "Dapatkan informasi terkait pertandingan dan klasemen tim favoritmu di musim ini!",
+                          "Temukan info terlengkap terkait tim favoritmu di liga inggris musim ini",
                           style: TextStyle(
                             color: Colors.white70,
                             fontSize: 15,
@@ -215,12 +206,13 @@ class _ClubListScreenState extends State<ClubListScreen> {
                             backgroundColor: Colors.blueAccent,
                             foregroundColor: Colors.white,
                           ),
-                          child: const Text("Lihat Seluruh Pertandingan"),
+                          child: const Text("Lihat Club"),
                         ),
+                        SizedBox(height: 40),
                       ],
                     ),
                   ),
-
+                
                   const SizedBox(height: 24),
 
                   // Clubs Grid

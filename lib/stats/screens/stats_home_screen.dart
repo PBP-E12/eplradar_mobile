@@ -110,8 +110,6 @@ class _StatsHomeScreenState extends State<StatsHomeScreen> {
             child: const Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(Icons.keyboard_arrow_down),
-                SizedBox(width: 6),
                 Text("Lihat Statistik"),
               ],
             ),
