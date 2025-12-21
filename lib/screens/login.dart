@@ -6,6 +6,7 @@ import 'menu.dart';
 import 'register.dart';
 
 class LoginPage extends StatefulWidget {
+  static const routeName = '/login';
   const LoginPage({super.key});
 
   @override

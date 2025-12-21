@@ -12,6 +12,7 @@ import '../widgets/stat_section.dart';
 import 'favorites_screen.dart';
 
 class StatsHomeScreen extends StatefulWidget {
+  static const routeName = '/stats';
   const StatsHomeScreen({super.key});
 
   @override
