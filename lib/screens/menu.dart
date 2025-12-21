@@ -1,10 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:pbp_django_auth/pbp_django_auth.dart';
-import 'package:provider/provider.dart';
-
 import '../widgets/right_drawer.dart';
-import '../stats/services/stats_service.dart';
-import '../stats/models/stats_model.dart';
 import 'home_stat.dart';
 import 'home_news.dart';
 
@@ -19,8 +14,6 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   @override
   Widget build(BuildContext context) {
-
-    final req = context.watch<CookieRequest>();
 
     return Scaffold(
       backgroundColor: const Color(0xFF1D1F22),
@@ -84,38 +77,11 @@ class _MyHomePageState extends State<MyHomePage> {
             ),
 
             const SizedBox(height: 24),
-
-            // STATS 
-            FutureBuilder<Stats?>(
-              future: StatsService.fetchStats(req),
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return const SizedBox(
-                    height: 120,
-                    child: Center(child: CircularProgressIndicator()),
-                  );
-                }
-
-                if (!snapshot.hasData) {
-                  return const Padding(
-                    padding: EdgeInsets.all(16),
-                    child: Text(
-                      "Gagal memuat statistik",
-                      style: TextStyle(color: Colors.white),
-                    ),
-                  );
-                }
-
-                return HomeStat(stats: snapshot.data!);
-              },
-            ),
-
+            const HomeStat(),
             const SizedBox(height: 32),
-
-            
             const HomeNews(),
-
             const SizedBox(height: 40),
+
           ],
         ),
       ),
