@@ -5,6 +5,7 @@ import '../models/club.dart';
 import '../models/club_comment.dart';
 import '../services/club_service.dart';
 import '../widgets/comment_card.dart';
+import 'package:eplradar_mobile/player/models/player.dart';
 
 class ClubDetailScreen extends StatefulWidget {
   final Club club;
@@ -20,6 +21,7 @@ class ClubDetailScreen extends StatefulWidget {
 
 class _ClubDetailScreenState extends State<ClubDetailScreen> {
   late Future<List<ClubComment>> _commentsFuture;
+  late Future<List<Player>> _playersFuture;
   final TextEditingController _commentController = TextEditingController();
   bool _isSubmitting = false;
 
@@ -27,6 +29,7 @@ class _ClubDetailScreenState extends State<ClubDetailScreen> {
   void initState() {
     super.initState();
     _loadComments();
+    _loadPlayers();
   }
 
   @override
@@ -42,6 +45,18 @@ class _ClubDetailScreenState extends State<ClubDetailScreen> {
         request,
         widget.club.namaKlub,
       );
+    });
+  }
+
+  void _loadPlayers() {
+    final request = context.read<CookieRequest>();
+    setState(() {
+      _playersFuture = ClubService.fetchClubPlayers(
+        request,
+        widget.club.id, // ← Pakai club.id bukan namaKlub
+      ).then((response) {
+        return response.map((p) => Player.fromJson(p)).toList();
+      });
     });
   }
 
@@ -386,6 +401,101 @@ class _ClubDetailScreenState extends State<ClubDetailScreen> {
 
             const SizedBox(height: 32),
 
+            // Players Section
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'Pemain Club Ini',
+                    style: TextStyle(
+                      fontSize: 22,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+
+                  FutureBuilder<List<Player>>(
+                    future: _playersFuture,
+                    builder: (context, snapshot) {
+                      if (snapshot.connectionState == ConnectionState.waiting) {
+                        return const Center(
+                          child: Padding(
+                            padding: EdgeInsets.all(40),
+                            child: CircularProgressIndicator(
+                              color: Color(0xFF3B82F6),
+                            ),
+                          ),
+                        );
+                      }
+
+                      if (snapshot.hasError) {
+                        return Center(
+                          child: Padding(
+                            padding: const EdgeInsets.all(40),
+                            child: Text(
+                              'Error loading players',
+                              style: TextStyle(
+                                color: Colors.grey[400],
+                                fontSize: 16,
+                              ),
+                            ),
+                          ),
+                        );
+                      }
+
+                      if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                        return Center(
+                          child: Padding(
+                            padding: const EdgeInsets.all(40),
+                            child: Column(
+                              children: [
+                                Icon(
+                                  Icons.people_outline,
+                                  size: 64,
+                                  color: Colors.grey[600],
+                                ),
+                                const SizedBox(height: 16),
+                                Text(
+                                  'Belum ada data pemain',
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    color: Colors.grey[500],
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        );
+                      }
+
+                      final players = snapshot.data!;
+
+                      return GridView.builder(
+                        shrinkWrap: true,
+                        physics: const NeverScrollableScrollPhysics(),
+                        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: 2,
+                          childAspectRatio: 0.75,
+                          crossAxisSpacing: 16,
+                          mainAxisSpacing: 16,
+                        ),
+                        itemCount: players.length,
+                        itemBuilder: (context, index) {
+                          final player = players[index];
+                          return _buildPlayerCard(player);
+                        },
+                      );
+                    },
+                  ),
+                ],
+              ),
+            ),
+
+            const SizedBox(height: 32),
+
             // Comments Section
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -635,6 +745,127 @@ class _ClubDetailScreenState extends State<ClubDetailScreen> {
           ),
         ),
       ],
+    );
+  }
+
+  Widget _buildPlayerCard(Player player) {
+    final logoUrl = _getLogoUrl(widget.club.logoFilename);
+
+    return Container(
+      decoration: BoxDecoration(
+        color: const Color(0xFF2B2D31),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: const Color(0xFF3F3F46),
+          width: 1,
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Player Photo
+          Expanded(
+            child: Container(
+              width: double.infinity,
+              decoration: BoxDecoration(
+                color: const Color(0xFF3F3F46),
+                borderRadius: const BorderRadius.only(
+                  topLeft: Radius.circular(16),
+                  topRight: Radius.circular(16),
+                ),
+              ),
+              child: ClipRRect(
+                borderRadius: const BorderRadius.only(
+                  topLeft: Radius.circular(16),
+                  topRight: Radius.circular(16),
+                ),
+                child: player.fullProfilePictureUrl.isNotEmpty
+                    ? Image.network(
+                        player.fullProfilePictureUrl,
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) {
+                          return const Center(
+                            child: Icon(
+                              Icons.person,
+                              size: 50,
+                              color: Colors.white54,
+                            ),
+                          );
+                        },
+                      )
+                    : const Center(
+                        child: Icon(
+                          Icons.person,
+                          size: 50,
+                          color: Colors.white54,
+                        ),
+                      ),
+              ),
+            ),
+          ),
+
+          // Player Info
+          Padding(
+            padding: const EdgeInsets.all(12),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Player Name
+                Text(
+                  player.name,
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                const SizedBox(height: 8),
+
+                // Club Badge + Name
+                Row(
+                  children: [
+                    Container(
+                      width: 20,
+                      height: 20,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF3F3F46),
+                        shape: BoxShape.circle,
+                      ),
+                      child: ClipOval(
+                        child: Image.network(
+                          logoUrl,
+                          fit: BoxFit.contain,
+                          errorBuilder: (context, error, stackTrace) {
+                            return const Icon(
+                              Icons.shield,
+                              size: 12,
+                              color: Colors.white54,
+                            );
+                          },
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 6),
+                    Expanded(
+                      child: Text(
+                        widget.club.namaKlub,
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: Colors.grey[400],
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
