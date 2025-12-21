@@ -1,3 +1,4 @@
+import 'package:eplradar_mobile/screens/home_match.dart';
 import 'package:flutter/material.dart';
 import '../widgets/right_drawer.dart';
 import 'home_stat.dart';
@@ -76,17 +77,13 @@ class _MyHomePageState extends State<MyHomePage> {
             ),
 
             const SizedBox(height: 24),
-
+            const HomeMatch(),
+            const SizedBox(height: 24),
             const HomeStat(),
-
-            const SizedBox(height: 32),
-
+            const SizedBox(height: 24),
             const HomeClub(),
-
             const SizedBox(height: 32),
-
             const HomeNews(),
-
             const SizedBox(height: 40),
           ],
         ),
