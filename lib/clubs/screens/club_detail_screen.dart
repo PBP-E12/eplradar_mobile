@@ -53,7 +53,7 @@ class _ClubDetailScreenState extends State<ClubDetailScreen> {
     setState(() {
       _playersFuture = ClubService.fetchClubPlayers(
         request,
-        widget.club.id, // ← Pakai club.id bukan namaKlub
+        widget.club.id, 
       ).then((response) {
         return response.map((p) => Player.fromJson(p)).toList();
       });
