@@ -3,7 +3,6 @@ import 'package:eplradar_mobile/widgets/right_drawer.dart';
 import 'package:flutter/material.dart';
 import 'package:eplradar_mobile/matches/model/match_model.dart';
 import 'package:eplradar_mobile/matches/screens/prediction_card.dart';
-import 'package:http/http.dart' as http;
 import 'package:pbp_django_auth/pbp_django_auth.dart';
 
 import 'dart:convert';
@@ -41,7 +40,8 @@ class _MatchScreenState extends State<MatchScreen> {
   int userId = 1;
 
   late ScrollController _scrollController;
-
+  final TextEditingController _homeScoreController = TextEditingController();
+  final TextEditingController _awayScoreController = TextEditingController();
 
   @override
   void initState() {
@@ -71,21 +71,15 @@ class _MatchScreenState extends State<MatchScreen> {
     });
 
     try {
-      final response = await http.get(
-        Uri.parse('https://raihan-maulana41-eplradar.pbp.cs.ui.ac.id/matches/api/klasemen/'),
+      final request = context.read<CookieRequest>();
+      final response = await request.get(
+        'https://raihan-maulana41-eplradar.pbp.cs.ui.ac.id/matches/api/klasemen/',
       );
 
-      if (response.statusCode == 200) {
-        setState(() {
-          klasemen = json.decode(response.body);
-          isLoadingKlasemen = false;
-        });
-      } else {
-        setState(() {
-          errorKlasemen = 'Gagal memuat klasemen';
-          isLoadingKlasemen = false;
-        });
-      }
+      setState(() {
+        klasemen = response;
+        isLoadingKlasemen = false;
+      });
     } catch (e) {
       setState(() {
         errorKlasemen = 'Error: $e';
@@ -101,22 +95,15 @@ class _MatchScreenState extends State<MatchScreen> {
     });
 
     try {
-      final response = await http.get(
-        Uri.parse('https://raihan-maulana41-eplradar.pbp.cs.ui.ac.id/matches/api/matches/'),
+      final request = context.read<CookieRequest>();
+      final data = await request.get(
+        'https://raihan-maulana41-eplradar.pbp.cs.ui.ac.id/matches/api/matches/',
       );
 
-      if (response.statusCode == 200) {
-        final List<dynamic> data = json.decode(response.body);
-        setState(() {
-          matches = data.map((json) => MatchModel.fromJson(json)).toList();
-          isLoadingMatches = false;
-        });
-      } else {
-        setState(() {
-          errorMatches = 'Gagal memuat matches';
-          isLoadingMatches = false;
-        });
-      }
+      setState(() {
+        matches = (data as List).map((json) => MatchModel.fromJson(json)).toList();
+        isLoadingMatches = false;
+      });
     } catch (e) {
       setState(() {
         errorMatches = 'Error: $e';
@@ -132,24 +119,17 @@ class _MatchScreenState extends State<MatchScreen> {
     });
 
     try {
-      final response = await http.get(
-        Uri.parse('https://raihan-maulana41-eplradar.pbp.cs.ui.ac.id/matches/api/predictions/'),
+      final request = context.read<CookieRequest>();
+      final data = await request.get(
+        'https://raihan-maulana41-eplradar.pbp.cs.ui.ac.id/matches/api/predictions/',
       );
 
-      if (response.statusCode == 200) {
-        final List<dynamic> data = json.decode(response.body);
-        setState(() {
-          predictions = data
-              .map((json) => ScorePredictionModel.fromJson(json))
-              .toList();
-          isLoadingPredictions = false;
-        });
-      } else {
-        setState(() {
-          errorPredictions = 'Gagal memuat predictions';
-          isLoadingPredictions = false;
-        });
-      }
+      setState(() {
+        predictions = (data as List)
+            .map((json) => ScorePredictionModel.fromJson(json))
+            .toList();
+        isLoadingPredictions = false;
+      });
     } catch (e) {
       setState(() {
         errorPredictions = 'Error: $e';
@@ -418,7 +398,6 @@ class _MatchScreenState extends State<MatchScreen> {
               ],
             ),
           ),
-          // Tampilkan semua data klasemen
           ...klasemen.map((club) => _buildKlasemenRow(club)).toList(),
         ],
       ),
@@ -513,7 +492,6 @@ class _MatchScreenState extends State<MatchScreen> {
         ),
       );
     }
-    
     final filteredMatch = selectedWeek == null ? matches : matches.where((match) => match.week == selectedWeek).toList();
 
     if (filteredMatch.isEmpty) {
@@ -568,6 +546,7 @@ class _MatchScreenState extends State<MatchScreen> {
               ],
             ),
           ),
+
           // Score
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -604,6 +583,7 @@ class _MatchScreenState extends State<MatchScreen> {
               ],
             ),
           ),
+
           // Away team
           Expanded(
             child: Column(
@@ -633,10 +613,10 @@ class _MatchScreenState extends State<MatchScreen> {
   }
 
   Widget _buildPredictionsSection() {
-    final req = context.watch<CookieRequest>();
-    final String? username = req.jsonData["username"];
+    final request = context.watch<CookieRequest>();
+    final String? username = request.jsonData["username"];
     final bool isLoggedIn =
-        req.loggedIn && username != null && username.trim().isNotEmpty;
+        request.loggedIn && username != null && username.trim().isNotEmpty;
 
     if (isLoadingPredictions) {
       return const Center(
@@ -725,10 +705,10 @@ class _MatchScreenState extends State<MatchScreen> {
   }
 
   Widget _buildPredictionHeader() {
-    final req = context.watch<CookieRequest>();
-    final String? username = req.jsonData["username"];
+    final request = context.watch<CookieRequest>();
+    final String? username = request.jsonData["username"];
     final bool isLoggedIn =
-        req.loggedIn && username != null && username.trim().isNotEmpty;
+        request.loggedIn && username != null && username.trim().isNotEmpty;
 
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
@@ -747,7 +727,18 @@ class _MatchScreenState extends State<MatchScreen> {
           if (isLoggedIn)
             IconButton(
               icon: const Icon(Icons.add, color: Colors.white),
-              onPressed: _showPredictionDialog,
+              onPressed: () {
+                // Reset form saat membuat prediksi baru
+                setState(() {
+                  editingPrediction = null;
+                  selectedMatch = null;
+                  homeScore = 0;
+                  awayScore = 0;
+                  _homeScoreController.clear();
+                  _awayScoreController.clear();
+                });
+                _showPredictionDialog();
+              },
             ),
         ],
       ),
@@ -755,6 +746,9 @@ class _MatchScreenState extends State<MatchScreen> {
   }
 
   void _showPredictionDialog() {
+    _homeScoreController.text = homeScore.toString();
+    _awayScoreController.text = awayScore.toString();
+
     showDialog(
       context: context,
       builder: (_) {
@@ -893,90 +887,96 @@ class _MatchScreenState extends State<MatchScreen> {
   }
 
   Future<void> _submitPrediction() async {
-    if (selectedMatch == null) return;
-
-    final req = context.read<CookieRequest>();
-
-    if(editingPrediction == null){
-      final response = await req.postJson(
-        'https://raihan-maulana41-eplradar.pbp.cs.ui.ac.id/matches/api/predictions/create/',
-        jsonEncode({
-          'match_id': selectedMatch!.id,
-          'home_score_prediction': homeScore,
-          'away_score_prediction': awayScore,
-        }),
+    if (selectedMatch == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Pilih pertandingan terlebih dahulu'),
+          backgroundColor: Colors.redAccent,
+        ),
       );
-
-      if (response['status'] == 'success') {
-        Navigator.pop(context);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Prediksi Berhasil Disimpan'),
-          ),
-        );
-        fetchPredictions();
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(response['message'] ?? 'Gagal menyimpan prediksi'),
-          ),
-        );
-      }
+      return;
     }
-    else{
-      final response = await req.postJson(
-        'https://raihan-maulana41-eplradar.pbp.cs.ui.ac.id/matches/api/predictions/${editingPrediction!.id}/update/',
-        jsonEncode({
-          'home_score_prediction': homeScore,
-          'away_score_prediction': awayScore,
-        }),
+
+    final request = context.read<CookieRequest>();
+
+    try {
+      if (editingPrediction == null) {
+        final response = await request.postJson(
+          'https://raihan-maulana41-eplradar.pbp.cs.ui.ac.id/matches/api/predictions/create/',
+          jsonEncode({
+            'match_id': selectedMatch!.id,
+            'home_score_prediction': homeScore,
+            'away_score_prediction': awayScore,
+          }),
+        );
+
+        if (response['status'] == 'success') {
+          Navigator.pop(context);
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Prediksi Berhasil Disimpan'),
+              backgroundColor: Colors.green,
+            ),
+          );
+          
+          setState(() {
+            selectedMatch = null;
+            homeScore = 0;
+            awayScore = 0;
+            _homeScoreController.clear();
+            _awayScoreController.clear();
+          });
+          
+          await fetchPredictions();
+          
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(response['message'] ?? 'Gagal mengedit prediksi'),
+              backgroundColor: Colors.redAccent,
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Error: $e'),
+          backgroundColor: Colors.redAccent,
+        ),
       );
-
-      if (response['status'] == 'success') {
-        editingPrediction = null;
-        Navigator.pop(context);
-        fetchPredictions();
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Prediksi Berhasil Diedit'),
-          ),
-        );
-      }
     }
-  }
-
-  Future<void> updatePrediction(int predictionId) async {
-    await http.put(
-      Uri.parse(
-        'https://raihan-maulana41-eplradar.pbp.cs.ui.ac.id/matches/api/predictions/$predictionId/update/',
-      ),
-      headers: {'Content-Type': 'application/json'},
-      body: jsonEncode({
-        'home_score_prediction': homeScore,
-        'away_score_prediction': awayScore,
-      }),
-    );
-
-    fetchPredictions();
   }
 
   Future<void> deletePrediction(int predictionId) async {
-    await http.delete(
-      Uri.parse(
+    final request = context.read<CookieRequest>();
+    
+    try{
+      await request.post(
         'https://raihan-maulana41-eplradar.pbp.cs.ui.ac.id/matches/api/predictions/$predictionId/delete/',
-      ),
-    );
+        {},
+      );
 
-    fetchPredictions();
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Berhasil Menghapus Prediksi'),
-      ),
-    );
-  }
+      await fetchPredictions();
 
-  String replaceSpacing(String clubName) {
-    return clubName.toLowerCase().replaceAll(' ', '_');
+      if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Berhasil Menghapus Prediksi'),
+              backgroundColor: Colors.green,
+            ),
+          );
+        }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error: $e'),
+            backgroundColor: Colors.redAccent,
+          ),
+        );
+      }
+    }
   }
 
    String _getLogoUrl(String logoFilename) {
