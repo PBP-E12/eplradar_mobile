@@ -63,7 +63,7 @@ Membuat endpoint di proyek django, lalu dikirim dalam bentuk JSON ke flutter dan
 🔗 [Figma Prototype - EPLRadar](https://www.figma.com/design/B5YHzIHcIlUCL9HPCaezqr/TK-PAS-PBP?node-id=0-1&t=RcLJKwgde4rSV4Mg-1)
 
 ## Badge Bitrise: 
- [![Build Status](https://app.bitrise.io/app/b24f41de-ef08-4119-ba0a-6e750a1e4982/status.svg?token=kWuT8dPNoPVGrqg_ukqzQA&branch=master)](https://app.bitrise.io/app/b24f41de-ef08-4119-ba0a-6e750a1e4982)
+ [![Build Status](https://app.bitrise.io/app/7c9e9a70-f375-4b50-a59a-050c442ca234/status.svg?token=aS7DcvWAoB-566hxsIWl_A&branch=master)](https://app.bitrise.io/app/7c9e9a70-f375-4b50-a59a-050c442ca234)
 
 ## Download
-Download aplikasi versi terbaru: [Download APK]()
+Download aplikasi versi terbaru: [Download APK](https://app.bitrise.io/app/7c9e9a70-f375-4b50-a59a-050c442ca234/installable-artifacts/d02831dbd4fda7a6/public-install-page/5a48b25df7b2110ca5529fc2fda80cbd)
