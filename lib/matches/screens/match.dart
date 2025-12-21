@@ -37,7 +37,6 @@ class _MatchScreenState extends State<MatchScreen> {
   MatchModel? selectedMatch;
   int homeScore = 0;
   int awayScore = 0;
-  int userId = 1;
 
   late ScrollController _scrollController;
   final TextEditingController _homeScoreController = TextEditingController();
@@ -53,6 +52,8 @@ class _MatchScreenState extends State<MatchScreen> {
   @override
   void dispose() {
     _scrollController.dispose();
+    _homeScoreController.dispose();
+    _awayScoreController.dispose();
     super.dispose();
   }
 
@@ -173,7 +174,6 @@ class _MatchScreenState extends State<MatchScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               _buildHeroSection(),
-              // Klasemen
               const SizedBox(height: 20),
               _buildSectionHeader('Klasemen'),
               const SizedBox(height: 4),
@@ -181,14 +181,12 @@ class _MatchScreenState extends State<MatchScreen> {
               
               const SizedBox(height: 24),
               
-              // Match
               _buildMatchHeader(),
               const SizedBox(height: 4),
               _buildMatchesSection(),
               
               const SizedBox(height: 24),
               
-              // Prediksi
               _buildPredictionHeader(),
               const SizedBox(height: 4),
               _buildPredictionsSection(),
@@ -203,37 +201,27 @@ class _MatchScreenState extends State<MatchScreen> {
 
   Widget _buildHeroSection() {
     return Container(
-      height: 280,
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 40),
       decoration: const BoxDecoration(
         image: DecorationImage(
-          image: AssetImage("assets/match.png"),
+          image: AssetImage('assets/match.png'),
           fit: BoxFit.cover,
-          opacity: 0.75,
         ),
       ),
-      padding: const EdgeInsets.only(left: 24, right: 24, bottom: 28),
-      alignment: Alignment.bottomLeft,
       child: Column(
-        mainAxisAlignment: MainAxisAlignment.end,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
+          const Text(
             "Match",
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 42,
-              fontWeight: FontWeight.bold,
-            ),
+            style: TextStyle(color: Colors.white, fontSize: 32, fontWeight: FontWeight.bold),
           ),
-          SizedBox(height: 8),
-          Text(
+          const SizedBox(height: 10),
+          const Text(
             "Dapatkan informasi terkait pertandingan dan klasemen tim favoritmu di musim ini!",
-            style: TextStyle(
-              color: Colors.white70,
-              fontSize: 15,
-            ),
+            style: TextStyle(color: Colors.white70, fontSize: 16),
           ),
-          SizedBox(height: 20),
+          const SizedBox(height: 20),
           ElevatedButton(
             onPressed: () {
               _scrollController.animateTo(
@@ -246,9 +234,8 @@ class _MatchScreenState extends State<MatchScreen> {
               backgroundColor: Colors.blueAccent,
               foregroundColor: Colors.white,
             ),
-            child: const Text("Lihat Seluruh Pertandingan"),
-          ),
-          SizedBox(height: 36),
+            child: const Text("Lihat Jadwal Pertandingan"),
+          )
         ],
       ),
     );
@@ -293,22 +280,12 @@ class _MatchScreenState extends State<MatchScreen> {
           items: [
             const DropdownMenuItem<int?>(
               value: null,
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text("Semua Pekan"),
-                ],
-              ),
+              child: Text("Semua Pekan"),
             ),
             ...weeks.map((week) {
               return DropdownMenuItem<int?>(
                 value: week,
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text("Pekan ke-$week"),
-                  ],
-                ),
+                child: Text("Pekan ke-$week"),
               );
             }),
           ],
@@ -379,7 +356,6 @@ class _MatchScreenState extends State<MatchScreen> {
       ),
       child: Column(
         children: [
-          // Header
           Container(
             padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 20),
             decoration: const BoxDecoration(
@@ -492,9 +468,10 @@ class _MatchScreenState extends State<MatchScreen> {
         ),
       );
     }
-    final filteredMatch = selectedWeek == null ? matches : matches.where((match) => match.week == selectedWeek).toList();
+    
+    final filteredMatches = selectedWeek == null ? matches : matches.where((match) => match.week == selectedWeek).toList();
 
-    if (filteredMatch.isEmpty) {
+    if (filteredMatches.isEmpty) {
       return const Padding(
         padding: EdgeInsets.all(16.0),
         child: Text(
@@ -505,7 +482,7 @@ class _MatchScreenState extends State<MatchScreen> {
     }
 
     return Column(
-      children: filteredMatch.map(_buildMatchCard).toList(),
+      children: filteredMatches.map(_buildMatchCard).toList(),
     );
   }
 
@@ -523,7 +500,6 @@ class _MatchScreenState extends State<MatchScreen> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          // Home team
           Expanded(
             child: Column(
               children: [
@@ -546,8 +522,6 @@ class _MatchScreenState extends State<MatchScreen> {
               ],
             ),
           ),
-
-          // Score
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16),
             child: Column(
@@ -583,8 +557,6 @@ class _MatchScreenState extends State<MatchScreen> {
               ],
             ),
           ),
-
-          // Away team
           Expanded(
             child: Column(
               children: [
@@ -684,15 +656,16 @@ class _MatchScreenState extends State<MatchScreen> {
           )
         else
           ...predictions.map((pred) {
-            return PredictionCard(
+            return PredictionCard(  // REMOVED const from here
               prediction: pred,
               isOwner: username != null && pred.user.username == username,
               onEdit: () {
-                editingPrediction = pred;
-                selectedMatch = matches.firstWhere((m) => m.id == pred.match.id);
-                homeScore = pred.homeScorePrediction;
-                awayScore = pred.awayScorePrediction;
-
+                setState(() {
+                  editingPrediction = pred;
+                  selectedMatch = matches.firstWhere((m) => m.id == pred.match.id);
+                  homeScore = pred.homeScorePrediction;
+                  awayScore = pred.awayScorePrediction;
+                });
                 _showPredictionDialog();
               },
               onDelete: () {
@@ -728,7 +701,6 @@ class _MatchScreenState extends State<MatchScreen> {
             IconButton(
               icon: const Icon(Icons.add, color: Colors.white),
               onPressed: () {
-                // Reset form saat membuat prediksi baru
                 setState(() {
                   editingPrediction = null;
                   selectedMatch = null;
@@ -752,108 +724,121 @@ class _MatchScreenState extends State<MatchScreen> {
     showDialog(
       context: context,
       builder: (_) {
-        return Dialog(
-          backgroundColor: const Color(0xFF1A1C1E),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
-          ),
-          child: Padding(
-            padding: const EdgeInsets.all(20),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text(
-                  'Prediksi Skor',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                const SizedBox(height: 12),
-                const Text(
-                  'Tebak skor pertandingan tim favoritmu!',
-                  style: TextStyle(color: Colors.white54),
-                ),
-                const SizedBox(height: 20),
-
-                /// Dropdown Match
-                DropdownButtonFormField<MatchModel>(
-                  dropdownColor: const Color(0xFF333438),
-                  items: matches.map((m) {
-                    return DropdownMenuItem(
-                      value: m,
-                      child: Text(
-                        '${m.homeTeam} vs ${m.awayTeam}',
-                        style: const TextStyle(color: Colors.white),
-                      ),
-                    );
-                  }).toList(),
-                  onChanged: (v) => selectedMatch = v,
-                  decoration: _inputDecoration('Pilih Pertandingan'),
-                ),
-
-                const SizedBox(height: 20),
-
-                /// Score Input
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        return StatefulBuilder(
+          builder: (context, setDialogState) {
+            return Dialog(
+              backgroundColor: const Color(0xFF1A1C1E),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.all(20),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    _scoreBox(homeScore, (v) => homeScore = v),
+                    Text(
+                      editingPrediction == null ? 'Prediksi Skor' : 'Edit Prediksi Skor',
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
                     const Text(
-                      ':',
-                      style: TextStyle(color: Colors.white, fontSize: 22),
+                      'Tebak skor pertandingan tim favoritmu!',
+                      style: TextStyle(color: Colors.white54),
                     ),
-                    _scoreBox(awayScore, (v) => awayScore = v),
+                    const SizedBox(height: 20),
+
+                    DropdownButtonFormField<MatchModel>(
+                      value: selectedMatch,
+                      dropdownColor: const Color(0xFF333438),
+                      items: matches.map((m) {
+                        return DropdownMenuItem(
+                          value: m,
+                          child: Text(
+                            '${m.homeTeam} vs ${m.awayTeam}',
+                            style: const TextStyle(color: Colors.white),
+                          ),
+                        );
+                      }).toList(),
+                      onChanged: editingPrediction == null
+                          ? (v) {
+                              setDialogState(() {
+                                selectedMatch = v;
+                              });
+                            }
+                          : null,
+                      decoration: _inputDecoration('Pilih Pertandingan'),
+                    ),
+
+                    const SizedBox(height: 20),
+
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: [
+                        _scoreBox(_homeScoreController, (v) {
+                          homeScore = v;
+                        }),
+                        const Text(
+                          ':',
+                          style: TextStyle(color: Colors.white, fontSize: 22),
+                        ),
+                        _scoreBox(_awayScoreController, (v) {
+                          awayScore = v;
+                        }),
+                      ],
+                    ),
+
+                    const SizedBox(height: 24),
+
+                    Row(
+                      children: [
+                        Expanded(
+                          child: OutlinedButton(
+                            style: OutlinedButton.styleFrom(
+                              foregroundColor: Colors.redAccent,
+                              side: const BorderSide(color: Colors.redAccent),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(24),
+                              ),
+                              padding: const EdgeInsets.symmetric(vertical: 14),
+                            ),
+                            onPressed: () => Navigator.pop(context),
+                            child: const Text('Batal'),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: ElevatedButton(
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.blueAccent,
+                              foregroundColor: Colors.white,
+                              elevation: 2,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(24),
+                              ),
+                              padding: const EdgeInsets.symmetric(vertical: 14),
+                            ),
+                            onPressed: _submitPrediction,
+                            child: const Text('Simpan Prediksi'),
+                          ),
+                        ),
+                      ],
+                    ),
                   ],
                 ),
-
-                const SizedBox(height: 24),
-
-                Row(
-                  children: [
-                    Expanded(
-                      child: OutlinedButton(
-                        style: OutlinedButton.styleFrom(
-                          foregroundColor: Colors.redAccent,
-                          side: const BorderSide(color: Colors.redAccent),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(24),
-                          ),
-                          padding: const EdgeInsets.symmetric(vertical: 14),
-                        ),
-                        onPressed: () => Navigator.pop(context),
-                        child: const Text('Batal'),
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.blueAccent,
-                          foregroundColor: Colors.white,
-                          elevation: 2,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(24),
-                          ),
-                          padding: const EdgeInsets.symmetric(vertical: 14),
-                        ),
-                        onPressed: _submitPrediction,
-                        child: const Text('Simpan Prediksi'),
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
+              ),
+            );
+          },
         );
       },
     );
   }
 
-  Widget _scoreBox(int value, Function(int) onChanged) {
+  Widget _scoreBox(TextEditingController controller, Function(int) onChanged) {
     return Container(
       width: 60,
       padding: const EdgeInsets.symmetric(vertical: 12),
@@ -862,6 +847,7 @@ class _MatchScreenState extends State<MatchScreen> {
         borderRadius: BorderRadius.circular(12),
       ),
       child: TextField(
+        controller: controller,
         keyboardType: TextInputType.number,
         textAlign: TextAlign.center,
         style: const TextStyle(color: Colors.white, fontSize: 18),
@@ -915,7 +901,7 @@ class _MatchScreenState extends State<MatchScreen> {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
               content: Text('Prediksi Berhasil Disimpan'),
-              backgroundColor: Colors.green,
+              backgroundColor: Colors.white,
             ),
           );
           
@@ -928,7 +914,6 @@ class _MatchScreenState extends State<MatchScreen> {
           });
           
           await fetchPredictions();
-          
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
@@ -951,7 +936,7 @@ class _MatchScreenState extends State<MatchScreen> {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
               content: Text('Prediksi Berhasil Diedit'),
-              backgroundColor: Colors.green,
+              backgroundColor: Colors.white,
             ),
           );
           
@@ -965,7 +950,6 @@ class _MatchScreenState extends State<MatchScreen> {
           });
           
           await fetchPredictions();
-          
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
@@ -988,22 +972,33 @@ class _MatchScreenState extends State<MatchScreen> {
   Future<void> deletePrediction(int predictionId) async {
     final request = context.read<CookieRequest>();
     
-    try{
-      await request.post(
+    try {
+      final response = await request.postJson(
         'https://raihan-maulana41-eplradar.pbp.cs.ui.ac.id/matches/api/predictions/$predictionId/delete/',
-        {},
+        jsonEncode({}),
       );
 
-      await fetchPredictions();
+      if (response['status'] == 'success') {
+        await fetchPredictions();
 
-      if (mounted) {
+        if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
-              content: Text('Berhasil Menghapus Prediksi'),
-              backgroundColor: Colors.green,
+              content: Text('Prediksi Berhasil Dihapus'),
+              backgroundColor: Colors.white,
             ),
           );
         }
+      } else {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(response['message'] ?? 'Gagal menghapus prediksi'),
+              backgroundColor: Colors.redAccent,
+            ),
+          );
+        }
+      }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -1016,7 +1011,7 @@ class _MatchScreenState extends State<MatchScreen> {
     }
   }
 
-   String _getLogoUrl(String logoFilename) {
+  String _getLogoUrl(String logoFilename) {
     final cleanFilename = logoFilename.replaceAll('.png', '');
     final filenameWithSpace = cleanFilename.replaceAll('_', ' ');
     final encodedFilename = Uri.encodeComponent(filenameWithSpace);
