@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:pbp_django_auth/pbp_django_auth.dart';
 import '../models/player.dart';
+import '../models/player_comment.dart';
+import '../widgets/player_card.dart';
+import '../widgets/player_comment_card.dart';
 import '../../clubs/models/club.dart';
 
 class PlayersPage extends StatefulWidget {
@@ -31,6 +34,27 @@ class _PlayersPageState extends State<PlayersPage> {
     return [];
   }
 
+  Future<List<PlayerComment>> fetchComments(CookieRequest request, String playerId) async {
+    final response = await request.get('https://raihan-maulana41-eplradar.pbp.cs.ui.ac.id/players/api/$playerId/comments/');
+    return PlayerCommentListResponse.fromJson(response).comments;
+  }
+
+  Future<void> submitComment(CookieRequest request, String playerId, String commentText) async {
+    final response = await request.post(
+      'https://raihan-maulana41-eplradar.pbp.cs.ui.ac.id/players/api/$playerId/comments/',
+      {'comment': commentText},
+    );
+    if (response['status'] == 'success') {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Comment posted!")),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(response['message'] ?? "Failed to post comment")),
+      );
+    }
+  }
+
   @override
   void initState() {
     super.initState();
@@ -50,67 +74,125 @@ class _PlayersPageState extends State<PlayersPage> {
   }
 
   void _showPlayerDetail(BuildContext context, Player player, String teamName) {
+    final request = context.read<CookieRequest>();
+    final TextEditingController commentController = TextEditingController();
+
     showDialog(
       context: context,
       builder: (BuildContext context) {
-        return Dialog(
-          backgroundColor: const Color(0xFF2A2D32),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-          child: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                _buildDynamicPlayerImage(player, isDialog: true),
-                Padding(
-                  padding: const EdgeInsets.all(24.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        player.name,
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 28,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      const SizedBox(height: 20),
-                      _buildDetailRow("Klub Saat Ini", teamName),
-                      _buildDetailRow("Posisi", player.position),
-                      _buildDetailRow("Usia", player.age.toString()),
-                      _buildDetailRow("Kewarganegaraan", player.citizenship),
-                      const SizedBox(height: 24),
-                      const Text(
-                        "Statistik Musim Ini",
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      const SizedBox(height: 12),
-                      Row(
+        return StatefulBuilder(
+          builder: (context, setModalState) {
+            return Dialog(
+              backgroundColor: const Color(0xFF2A2D32),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+              child: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    _buildDynamicPlayerImage(player, isDialog: true),
+                    Padding(
+                      padding: const EdgeInsets.all(24.0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          _buildStatCard("Gol", player.currGoals.toString()),
-                          const SizedBox(width: 8),
-                          _buildStatCard("Assist", player.currAssists.toString()),
-                          const SizedBox(width: 8),
-                          _buildStatCard("Match", player.matchPlayed.toString()),
+                          Text(
+                            player.name,
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 28,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          const SizedBox(height: 20),
+                          _buildDetailRow("Klub Saat Ini", teamName),
+                          _buildDetailRow("Posisi", player.position),
+                          _buildDetailRow("Usia", player.age.toString()),
+                          _buildDetailRow("Kewarganegaraan", player.citizenship),
+                          const SizedBox(height: 24),
+                          const Text(
+                            "Statistik Musim Ini",
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          const SizedBox(height: 12),
+                          Row(
+                            children: [
+                              _buildStatCard("Gol", player.currGoals.toString()),
+                              const SizedBox(width: 8),
+                              _buildStatCard("Assist", player.currAssists.toString()),
+                              const SizedBox(width: 8),
+                              _buildStatCard("Match", player.matchPlayed.toString()),
+                            ],
+                          ),
+                          const SizedBox(height: 32),
+                          const Divider(color: Colors.grey),
+                          const SizedBox(height: 16),
+                          const Text(
+                            "Komentar",
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          const SizedBox(height: 12),
+                          FutureBuilder<List<PlayerComment>>(
+                            future: fetchComments(request, player.id),
+                            builder: (context, snapshot) {
+                              if (snapshot.connectionState == ConnectionState.waiting) {
+                                return const Center(child: CircularProgressIndicator());
+                              }
+                              final comments = snapshot.data ?? [];
+                              if (comments.isEmpty) {
+                                return const Text("Belum ada komentar.", style: TextStyle(color: Colors.grey));
+                              }
+                              return ListView.builder(
+                                shrinkWrap: true,
+                                physics: const NeverScrollableScrollPhysics(),
+                                itemCount: comments.length,
+                                itemBuilder: (context, index) {
+                                  return PlayerCommentCard(comment: comments[index]);
+                                },
+                              );
+                            },
+                          ),
+                          const SizedBox(height: 16),
+                          TextField(
+                            controller: commentController,
+                            style: const TextStyle(color: Colors.white),
+                            decoration: InputDecoration(
+                              hintText: "Tambah komentar...",
+                              hintStyle: const TextStyle(color: Colors.grey),
+                              suffixIcon: IconButton(
+                                icon: const Icon(Icons.send, color: Colors.blueAccent),
+                                onPressed: () async {
+                                  if (commentController.text.isNotEmpty) {
+                                    await submitComment(request, player.id, commentController.text);
+                                    commentController.clear();
+                                    setModalState(() {}); // Refresh comments
+                                  }
+                                },
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 24),
+                          Center(
+                            child: TextButton(
+                              onPressed: () => Navigator.pop(context),
+                              child: const Text("Close", style: TextStyle(color: Colors.blueAccent)),
+                            ),
+                          ),
                         ],
                       ),
-                      const SizedBox(height: 24),
-                      Center(
-                        child: TextButton(
-                          onPressed: () => Navigator.pop(context),
-                          child: const Text("Close", style: TextStyle(color: Colors.blueAccent)),
-                        ),
-                      ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
-              ],
-            ),
-          ),
+              ),
+            );
+          },
         );
       },
     );
@@ -122,6 +204,7 @@ class _PlayersPageState extends State<PlayersPage> {
         return AnimatedContainer(
           duration: const Duration(milliseconds: 300),
           width: double.infinity,
+          height: isDialog ? 300 : 200, // Constrained height
           decoration: isDialog ? const BoxDecoration(
             gradient: LinearGradient(
               colors: [Color(0xFF374151), Color(0xFF1F2937)],
@@ -136,15 +219,15 @@ class _PlayersPageState extends State<PlayersPage> {
                       player.fullProfilePictureUrl,
                       fit: BoxFit.contain,
                       errorBuilder: (context, error, stackTrace) =>
-                          const SizedBox(height: 200, child: Icon(Icons.person, color: Colors.grey, size: 50)),
+                          const Icon(Icons.person, color: Colors.grey, size: 50),
                     )
                   : Image.network(
                       player.fullProfilePictureUrl,
                       fit: BoxFit.contain,
                       errorBuilder: (context, error, stackTrace) =>
-                          const SizedBox(height: 200, child: Icon(Icons.person, color: Colors.grey, size: 50)),
+                          const Icon(Icons.person, color: Colors.grey, size: 50),
                     ))
-              : const SizedBox(height: 200, child: Icon(Icons.person, color: Colors.grey, size: 50)),
+              : const Icon(Icons.person, color: Colors.grey, size: 50),
         );
       }
     );
@@ -318,65 +401,24 @@ class _PlayersPageState extends State<PlayersPage> {
                     physics: const NeverScrollableScrollPhysics(),
                     itemCount: snapshot.data!.length,
                     padding: const EdgeInsets.symmetric(horizontal: 16),
-                    itemBuilder: (_, index) {
+                    itemBuilder: (context, index) {
                       final player = snapshot.data![index];
                       final club = clubs.firstWhere(
-                            (c) => c.id == player.team,
+                        (c) => c.id == player.team,
                         orElse: () => Club(id: 0, namaKlub: "Unknown", logoFilename: "", jumlahWin: 0, jumlahDraw: 0, jumlahLose: 0, totalMatches: 0, points: 0),
                       );
-                      return _buildPlayerCard(context, player, club, cardColor, request);
+                      return PlayerCard(
+                        player: player, 
+                        club: club, 
+                        cardColor: cardColor, 
+                        onShowDetail: _showPlayerDetail
+                      );
                     },
                   );
                 }
               },
             ),
             const SizedBox(height: 40),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildPlayerCard(BuildContext context, Player player, Club club, Color cardColor, CookieRequest request) {
-    return Card(
-      color: cardColor,
-      margin: const EdgeInsets.only(bottom: 20),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      clipBehavior: Clip.antiAlias,
-      child: InkWell(
-        onTap: () => _showPlayerDetail(context, player, club.namaKlub),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _buildDynamicPlayerImage(player),
-            Padding(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(player.position, style: const TextStyle(color: Colors.grey, fontSize: 12)),
-                      Text(
-                        club.namaKlub,
-                        style: const TextStyle(color: Colors.grey, fontSize: 12),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    player.name,
-                    style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    "Nationality: ${player.citizenship} | Age: ${player.age}",
-                    style: const TextStyle(color: Colors.white70, fontSize: 14),
-                  ),
-                ],
-              ),
-            ),
           ],
         ),
       ),
