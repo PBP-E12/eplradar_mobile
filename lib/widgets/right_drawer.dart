@@ -7,6 +7,7 @@ import 'package:eplradar_mobile/matches/screens/match.dart';
 import '../screens/menu.dart';
 import '../news/screens/news.dart';
 import '../stats/screens/stats_home_screen.dart';
+import '../player/screens/playerspage.dart';
 import '../screens/login.dart';
 import '../screens/register.dart';
 
@@ -55,36 +56,30 @@ class RightDrawer extends StatelessWidget {
 
           const SizedBox(height: 12),
 
-          _item(
-            context,
-            icon: Icons.home_outlined,
-            title: "Home",
-            routeName: MyHomePage.routeName,
-          ),
-          _item(
-            context,
-            icon: Icons.newspaper,
-            title: "Match",
-            routeName: MatchScreen.routeName,
-          ),
-          _item(
-            context,
-            icon: Icons.analytics,
-            title: "Statistik",
-            routeName: StatsHomeScreen.routeName,
-          ),
-          _item(
-            context,
-            icon: Icons.sports_soccer_sharp,
-            title: "Klub",
-            routeName: ClubListScreen.routeName,
-          ),
-          _item(
-            context,
-            icon: Icons.article_outlined,
-            title: "Berita",
-            routeName: NewsPage.routeName,
-          ),
+          _item(context,
+              icon: Icons.home_outlined,
+              title: "Home",
+              page: const MyHomePage()),
+          _item(context,
+              icon: Icons.newspaper,
+              title: "Match",
+              page: const MatchScreen()),
+          _item(context,
+              icon: Icons.analytics,
+              title: "Statistik",
+              page: const StatsHomeScreen()),
+           _item(context,
+              icon: Icons.person,
+              title: "Pemain",
+              page: const PlayersPage()),
+            _item(context,
+              icon: Icons.sports_soccer_sharp,
+              title: "Klub",
+              page: const ClubListScreen()),
+          _item(context,
+              icon: Icons.article_outlined,
+              title: "Berita",
+              page: const NewsPage()),
 
           const Divider(
             color: Colors.white24,
