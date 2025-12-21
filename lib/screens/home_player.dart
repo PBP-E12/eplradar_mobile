@@ -54,7 +54,7 @@ class HomePlayer extends StatelessWidget {
                   Navigator.pushNamed(context, PlayersPage.routeName);
                 },
                 child: const Text(
-                  "Lihat semua pemain →",
+                  "Lihat Semua Pemain →",
                   style: TextStyle(color: Colors.blueAccent),
                 ),
               ),
