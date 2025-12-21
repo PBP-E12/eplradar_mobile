@@ -15,18 +15,30 @@ class HomePlayer extends StatelessWidget {
   Future<Map<String, dynamic>> fetchData(CookieRequest request) async {
     try {
       final players = await PlayerService.fetchPlayers(request);
-      players.sort((a, b) => b.currGoals.compareTo(a.currGoals));
+      // Pick players at random
+      players.shuffle();
       
       final clubs = await ClubService.fetchClubs(request);
       
       return {
-        'players': players.take(6).toList(),
+        'players': players.take(3).toList(),
         'clubs': clubs,
       };
     } catch (e) {
       debugPrint('Error fetching home player data: $e');
       return {'players': <Player>[], 'clubs': <Club>[]};
     }
+  }
+
+  void _showPlayerDetail(BuildContext context, Player player, String teamName) {
+    showDialog(
+      context: context,
+      builder: (context) => Dialog(
+        backgroundColor: const Color(0xFF2A2D32),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        child: PlayerDetail(player: player, teamName: teamName),
+      ),
+    );
   }
 
   @override
@@ -42,7 +54,7 @@ class HomePlayer extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               const Text(
-                "Top Scorers",
+                "Pemain",
                 style: TextStyle(
                   color: Colors.white,
                   fontSize: 22,
@@ -92,9 +104,9 @@ class HomePlayer extends StatelessWidget {
                 physics: const NeverScrollableScrollPhysics(),
                 gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                   crossAxisCount: 3,
-                  childAspectRatio: 0.75, // Taller but narrower for 3x2 box
-                  crossAxisSpacing: 10,
-                  mainAxisSpacing: 10,
+                  childAspectRatio: 1.0,
+                  crossAxisSpacing: 12,
+                  mainAxisSpacing: 12,
                 ),
                 itemCount: players.length,
                 itemBuilder: (context, index) {
@@ -103,87 +115,42 @@ class HomePlayer extends StatelessWidget {
                     (c) => c.id == player.team,
                     orElse: () => Club(id: 0, namaKlub: "Unknown", logoFilename: "", jumlahWin: 0, jumlahDraw: 0, jumlahLose: 0, totalMatches: 0, points: 0),
                   );
-                  return _buildPlayerHomeCard(context, player, club.namaKlub);
+                  return GestureDetector(
+                    onTap: () => _showPlayerDetail(context, player, club.namaKlub),
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF2A2D32),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(
+                          color: const Color(0xFF3F3F46),
+                          width: 1,
+                        ),
+                      ),
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(12),
+                        child: player.fullProfilePictureUrl.isNotEmpty
+                            ? (player.isLocalAsset
+                                ? Image.asset(
+                                    player.fullProfilePictureUrl,
+                                    fit: BoxFit.contain,
+                                    errorBuilder: (context, error, stackTrace) =>
+                                        const Icon(Icons.person, color: Colors.grey, size: 40),
+                                  )
+                                : Image.network(
+                                    player.fullProfilePictureUrl,
+                                    fit: BoxFit.contain,
+                                    errorBuilder: (context, error, stackTrace) =>
+                                        const Icon(Icons.person, color: Colors.grey, size: 40),
+                                  ))
+                            : const Icon(Icons.person, color: Colors.grey, size: 40),
+                      ),
+                    ),
+                  );
                 },
               );
             },
           ),
         ],
-      ),
-    );
-  }
-
-  Widget _buildPlayerHomeCard(BuildContext context, Player player, String teamName) {
-    return GestureDetector(
-      onTap: () {
-        showDialog(
-          context: context,
-          builder: (context) => Dialog(
-            backgroundColor: const Color(0xFF2A2D32),
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-            child: PlayerDetail(player: player, teamName: teamName),
-          ),
-        );
-      },
-      child: Container(
-        decoration: BoxDecoration(
-          color: const Color(0xFF2A2D32),
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(
-            color: const Color(0xFF3F3F46),
-            width: 1,
-          ),
-        ),
-        padding: const EdgeInsets.all(8),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Expanded(
-              child: Container(
-                width: double.infinity,
-                decoration: const BoxDecoration(
-                  color: Color(0xFF3F3F46),
-                  shape: BoxShape.circle,
-                ),
-                child: ClipOval(
-                  child: player.fullProfilePictureUrl.isNotEmpty
-                      ? (player.isLocalAsset
-                          ? Image.asset(
-                              player.fullProfilePictureUrl,
-                              fit: BoxFit.contain,
-                              errorBuilder: (context, error, stackTrace) => const Icon(Icons.person, size: 30, color: Colors.white54),
-                            )
-                          : Image.network(
-                              player.fullProfilePictureUrl,
-                              fit: BoxFit.contain,
-                              errorBuilder: (context, error, stackTrace) => const Icon(Icons.person, size: 30, color: Colors.white54),
-                            ))
-                      : const Icon(Icons.person, size: 30, color: Colors.white54),
-                ),
-              ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              player.name,
-              style: const TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.bold,
-                color: Colors.white,
-              ),
-              textAlign: TextAlign.center,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-            ),
-            const SizedBox(height: 2),
-            Text(
-              '${player.currGoals} gol',
-              style: TextStyle(
-                fontSize: 10,
-                color: Colors.grey[400],
-              ),
-            ),
-          ],
-        ),
       ),
     );
   }
