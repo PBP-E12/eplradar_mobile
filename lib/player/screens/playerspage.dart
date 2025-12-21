@@ -5,6 +5,7 @@ import '../models/player.dart';
 import '../../clubs/models/club.dart';
 
 class PlayersPage extends StatefulWidget {
+  static const routeName = '/players';
   const PlayersPage({super.key});
 
   @override
