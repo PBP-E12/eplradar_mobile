@@ -134,29 +134,18 @@ class ClubService {
         'https://raihan-maulana41-eplradar.pbp.cs.ui.ac.id/players/api/?team=$teamId',
       );
 
-      debugPrint('=== FETCH PLAYERS DEBUG ===');
-      debugPrint('Team ID: $teamId');
-      debugPrint('Response type: ${response.runtimeType}');
-
-      // Handle both response formats
       List<dynamic> playersList = [];
       
       if (response is Map && response['players'] != null) {
-        // Response wrapped in {players: [...]}
         playersList = response['players'] as List;
-        debugPrint('Got ${playersList.length} players from wrapped response');
       } else if (response is List) {
-        // Direct list response
         playersList = response;
-        debugPrint('Got ${playersList.length} players from direct list');
       } else {
-        debugPrint('Unexpected response format!');
         return [];
       }
       
       return playersList;
     } catch (e) {
-      debugPrint('Error: $e');
       throw Exception('Failed to load players: $e');
     }
   }
