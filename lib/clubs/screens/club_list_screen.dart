@@ -208,7 +208,7 @@ class _ClubListScreenState extends State<ClubListScreen> {
                           ),
                           child: const Text("Lihat Club"),
                         ),
-                        SizedBox(height: 40),
+                        SizedBox(height: 36),
                       ],
                     ),
                   ),

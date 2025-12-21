@@ -268,6 +268,7 @@ class _MatchScreenState extends State<MatchScreen> {
             ),
             child: const Text("Lihat Seluruh Pertandingan"),
           ),
+          SizedBox(height: 36),
         ],
       ),
     );

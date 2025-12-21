@@ -144,6 +144,7 @@ class _NewsPageState extends State<NewsPage> {
                     ),
                     child: const Text("Lihat Berita"),
                   ),
+                  SizedBox(height: 36),
                 ],
               ),
             ),

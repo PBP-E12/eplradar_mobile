@@ -114,6 +114,7 @@ class _StatsHomeScreenState extends State<StatsHomeScreen> {
               ],
             ),
           ),
+          SizedBox(height: 36),
         ],
       ),
     );
