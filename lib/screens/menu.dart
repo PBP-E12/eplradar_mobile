@@ -2,6 +2,7 @@ import 'package:eplradar_mobile/screens/home_match.dart';
 import 'package:flutter/material.dart';
 import '../widgets/right_drawer.dart';
 import 'home_stat.dart';
+import 'home_club.dart';
 import 'home_news.dart';
 
 class MyHomePage extends StatefulWidget {
@@ -15,7 +16,6 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   @override
   Widget build(BuildContext context) {
-
     return Scaffold(
       backgroundColor: const Color(0xFF1D1F22),
       appBar: AppBar(
@@ -39,12 +39,11 @@ class _MyHomePageState extends State<MyHomePage> {
         ],
       ),
       endDrawer: const RightDrawer(),
-
       body: SingleChildScrollView(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            
+            // Hero Section
             Container(
               height: 280,
               decoration: const BoxDecoration(
@@ -82,6 +81,8 @@ class _MyHomePageState extends State<MyHomePage> {
             const SizedBox(height: 24),
             const HomeStat(),
             const SizedBox(height: 24),
+            const HomeClub(),
+            const SizedBox(height: 32),
             const HomeNews(),
             const SizedBox(height: 40),
           ],
