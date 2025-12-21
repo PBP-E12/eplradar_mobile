@@ -6,15 +6,14 @@ import '../models/player.dart';
 import '../models/player_comment.dart';
 
 class PlayerService {
-  static const String baseUrl = 'https://raihan-maulana41-eplradar.pbp.cs.ui.ac.id/players/api';
+  static const String baseUrl = 'https://raihan-maulana41-eplradar.pbp.cs.ui.ac.id/players';
 
   // Fetch all players or filtered by team
   static Future<List<Player>> fetchPlayers(CookieRequest request, {String teamId = 'all'}) async {
     try {
-      final response = await request.get('$baseUrl/?team=$teamId');
+      final response = await request.get('$baseUrl/api/?team=$teamId');
       if (response != null) {
-        final playerListResponse = PlayerListResponse.fromJson(response);
-        return playerListResponse.players;
+        return PlayerListResponse.fromJson(response).players;
       }
       return [];
     } catch (e) {
@@ -29,10 +28,10 @@ class PlayerService {
     String playerId
   ) async {
     try {
+      // Trying the most likely correct path structure based on your URL config
       final response = await request.get('$baseUrl/$playerId/comments/');
       if (response != null) {
-        final commentListResponse = PlayerCommentListResponse.fromJson(response);
-        return commentListResponse.comments;
+        return PlayerCommentListResponse.fromJson(response).comments;
       }
       return [];
     } catch (e) {
@@ -48,6 +47,8 @@ class PlayerService {
     String comment,
   ) async {
     try {
+      // Ensure the URL matches the path('<uuid:player_id>/comments/') pattern exactly
+      // trailing slash is vital in Django
       final response = await request.post(
         '$baseUrl/$playerId/comments/',
         {
@@ -61,6 +62,28 @@ class PlayerService {
       return false;
     } catch (e) {
       print('Error creating comment: $e');
+      return false;
+    }
+  }
+
+  // Delete a comment
+  static Future<bool> deleteComment(
+    CookieRequest request,
+    int commentId,
+  ) async {
+    try {
+      // Using the generic API endpoint for comment deletion
+      final response = await request.post(
+        'https://raihan-maulana41-eplradar.pbp.cs.ui.ac.id/players/api/comments/$commentId/delete/',
+        {},
+      );
+
+      if (response != null && (response['status'] == 'success' || response['success'] == true)) {
+        return true;
+      }
+      return false;
+    } catch (e) {
+      print('Error deleting comment: $e');
       return false;
     }
   }
