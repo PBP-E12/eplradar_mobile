@@ -932,6 +932,43 @@ class _MatchScreenState extends State<MatchScreen> {
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
+              content: Text(response['message'] ?? 'Gagal menyimpan prediksi'),
+              backgroundColor: Colors.redAccent,
+            ),
+          );
+        }
+      } else {
+        final response = await request.postJson(
+          'https://raihan-maulana41-eplradar.pbp.cs.ui.ac.id/matches/api/predictions/${editingPrediction!.id}/update/',
+          jsonEncode({
+            'home_score_prediction': homeScore,
+            'away_score_prediction': awayScore,
+          }),
+        );
+
+        if (response['status'] == 'success') {
+          Navigator.pop(context);
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Prediksi Berhasil Diedit'),
+              backgroundColor: Colors.green,
+            ),
+          );
+          
+          setState(() {
+            editingPrediction = null;
+            selectedMatch = null;
+            homeScore = 0;
+            awayScore = 0;
+            _homeScoreController.clear();
+            _awayScoreController.clear();
+          });
+          
+          await fetchPredictions();
+          
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
               content: Text(response['message'] ?? 'Gagal mengedit prediksi'),
               backgroundColor: Colors.redAccent,
             ),
