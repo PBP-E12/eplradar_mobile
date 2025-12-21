@@ -3,6 +3,7 @@ import 'package:eplradar_mobile/matches/screens/match.dart';
 import 'package:eplradar_mobile/stats/screens/stats_home_screen.dart';
 import 'package:eplradar_mobile/clubs/screens/club_list_screen.dart';
 import 'package:eplradar_mobile/news/screens/news.dart';
+import 'package:eplradar_mobile/player/screens/playerspage.dart';
 import 'package:eplradar_mobile/screens/login.dart';
 import 'package:eplradar_mobile/screens/register.dart';
 import 'package:flutter/material.dart';
@@ -34,13 +35,13 @@ class MyApp extends StatelessWidget {
         ),
       ),
 
-      // ✅ pakai named route
       initialRoute: MyHomePage.routeName,
       routes: {
         MyHomePage.routeName: (_) => const MyHomePage(),
         MatchScreen.routeName: (_) => const MatchScreen(),
         StatsHomeScreen.routeName: (_) => const StatsHomeScreen(),
         ClubListScreen.routeName: (_) => const ClubListScreen(),
+        PlayersPage.routeName: (_) => const PlayersPage(),
         NewsPage.routeName: (_) => const NewsPage(),
         LoginPage.routeName: (_) => const LoginPage(),
         RegisterPage.routeName: (_) => const RegisterPage(),
