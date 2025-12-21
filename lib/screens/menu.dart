@@ -48,7 +48,7 @@ class _MyHomePageState extends State<MyHomePage> {
               height: 280,
               decoration: const BoxDecoration(
                 image: DecorationImage(
-                  image: AssetImage("assets/stats.png"),
+                  image: AssetImage("assets/home_page.png"),
                   fit: BoxFit.cover,
                   opacity: 0.75,
                 ),
@@ -72,6 +72,7 @@ class _MyHomePageState extends State<MyHomePage> {
                     "Portal statistik dan berita Liga Inggris terlengkap. Dapatkan data match, pemain, dan klub terkini.",
                     style: TextStyle(color: Colors.white70, fontSize: 15),
                   ),
+                  SizedBox(height: 40),
                 ],
               ),
             ),
