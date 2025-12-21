@@ -70,8 +70,8 @@ class PredictionCard extends StatelessWidget {
               Expanded(
                 child: Column(
                   children: [
-                    Image.asset(
-                      'images/clubs/${replaceSpacing(prediction.match.homeTeam)}.png',
+                    Image.network(
+                      logoUrlHome,
                       width: 40,
                       height: 40,
                       errorBuilder: (context, error, stackTrace) {
@@ -144,8 +144,8 @@ class PredictionCard extends StatelessWidget {
               Expanded(
                 child: Column(
                   children: [
-                    Image.asset(
-                      'images/clubs/${replaceSpacing(prediction.match.awayTeam)}.png',
+                    Image.network(
+                      logoUrlAway,
                       width: 40,
                       height: 40,
                       errorBuilder: (context, error, stackTrace) {
@@ -207,11 +207,17 @@ class PredictionCard extends StatelessWidget {
     );
   }
 
-  String replaceSpacing(String clubName) {
-    String result = clubName.toLowerCase();
-    if(result.contains(' ')){
-      return result.replaceAll(' ', '_');
-    }
-    return result;
+  String _getLogoUrl(String logoFilename) {
+    final cleanFilename = logoFilename.replaceAll('.png', '');
+    final filenameWithSpace = cleanFilename.replaceAll('_', ' ');
+    final encodedFilename = Uri.encodeComponent(filenameWithSpace);
+    return 'https://raihan-maulana41-eplradar.pbp.cs.ui.ac.id/static/img/club-matches/$encodedFilename.png';
   }
+
+  String get logoUrlHome =>
+    _getLogoUrl(prediction.match.homeTeam);
+
+  String get logoUrlAway =>
+    _getLogoUrl(prediction.match.awayTeam);
+
 }
