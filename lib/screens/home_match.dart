@@ -223,6 +223,9 @@ class _HomeMatchState extends State<HomeMatch> {
   }
 
   Widget _buildMatchCard(MatchModel match) {
+    final logoUrlHome = _getLogoUrl(match.homeTeam);
+    final logoUrlAway = _getLogoUrl(match.awayTeam);
+
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(14),
@@ -233,8 +236,8 @@ class _HomeMatchState extends State<HomeMatch> {
       child: Row(
         children: [
           // Home Team
-          Image.asset(
-            'images/clubs/${replaceSpacing(match.homeTeam)}.png',
+          Image.network(
+            logoUrlHome,
             width: 28,
             height: 28,
             errorBuilder: (context, error, stackTrace) {
@@ -279,8 +282,8 @@ class _HomeMatchState extends State<HomeMatch> {
 
           const SizedBox(width: 8),
 
-          Image.asset(
-            'images/clubs/${replaceSpacing(match.awayTeam)}.png',
+          Image.network(
+            logoUrlAway,
             width: 28,
             height: 28,
             errorBuilder: (context, error, stackTrace) {
@@ -361,6 +364,10 @@ class _HeaderCell extends StatelessWidget {
 
 }
 
-String replaceSpacing(String clubName) {
-  return clubName.toLowerCase().replaceAll(' ', '_');
-}
+  String _getLogoUrl(String logoFilename) {
+    final cleanFilename = logoFilename.replaceAll('.png', '');
+    final filenameWithSpace = cleanFilename.replaceAll('_', ' ');
+    final encodedFilename = Uri.encodeComponent(filenameWithSpace);
+    return 'https://raihan-maulana41-eplradar.pbp.cs.ui.ac.id/static/img/club-matches/$encodedFilename.png';
+  }
+
