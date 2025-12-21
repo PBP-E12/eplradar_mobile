@@ -18,7 +18,7 @@ class _PlayersPageState extends State<PlayersPage> {
 
   Future<List<Player>> fetchPlayers(CookieRequest request) async {
     final response = await request.get(
-        'http://localhost:8000/players/api/?team=$selectedTeamId');
+        'https://raihan-maulana41-eplradar.pbp.cs.ui.ac.id/players/api/?team=$selectedTeamId');
 
     if (response is List) {
       return response.map((p) => Player.fromJson(p)).toList();
@@ -27,7 +27,7 @@ class _PlayersPageState extends State<PlayersPage> {
   }
 
   Future<List<Club>> fetchClubs(CookieRequest request) async {
-    final response = await request.get('http://localhost:8000/clubs/api/clubs/');
+    final response = await request.get('https://raihan-maulana41-eplradar.pbp.cs.ui.ac.id/clubs/api/clubs/');
     if (response != null && response['data'] != null) {
       return (response['data'] as List).map((c) => Club.fromJson(c)).toList();
     }
@@ -74,9 +74,9 @@ class _PlayersPageState extends State<PlayersPage> {
                     ),
                     borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
                   ),
-                  child: player.profilePictureUrl != null && player.profilePictureUrl!.isNotEmpty
+                  child: player.fullProfilePictureUrl.isNotEmpty
                       ? Image.network(
-                    player.profilePictureUrl!,
+                    player.fullProfilePictureUrl,
                     fit: BoxFit.contain,
                     errorBuilder: (context, error, stackTrace) =>
                     const Icon(Icons.person, size: 100, color: Colors.grey),
@@ -213,7 +213,7 @@ class _PlayersPageState extends State<PlayersPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Hero Section (Styled like NewsPage)
+            // Hero Section (Styled)
             Container(
               width: double.infinity,
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 40),
@@ -339,9 +339,9 @@ class _PlayersPageState extends State<PlayersPage> {
             SizedBox(
               height: 200,
               width: double.infinity,
-              child: player.profilePictureUrl != null && player.profilePictureUrl!.isNotEmpty
+              child: player.fullProfilePictureUrl.isNotEmpty
                   ? Image.network(
-                player.profilePictureUrl!,
+                player.fullProfilePictureUrl,
                 fit: BoxFit.cover,
                 errorBuilder: (context, error, stackTrace) =>
                 const Center(child: Icon(Icons.person, color: Colors.grey, size: 50)),
