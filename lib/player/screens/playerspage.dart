@@ -66,7 +66,7 @@ class _PlayersPageState extends State<PlayersPage> {
       backgroundColor: bgColor,
       appBar: AppBar(
         title: const Text(
-          'Statistik',
+          'Pemain',
           style: TextStyle(
             color: Colors.white,
             fontWeight: FontWeight.bold,
