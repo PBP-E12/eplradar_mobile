@@ -1,9 +1,8 @@
-import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
-
 import 'package:eplradar_mobile/matches/model/match_model.dart';
 import 'package:eplradar_mobile/matches/screens/match.dart';
+import 'package:pbp_django_auth/pbp_django_auth.dart';
+import 'package:provider/provider.dart';
 
 class HomeMatch extends StatefulWidget {
   const HomeMatch({super.key});
@@ -35,53 +34,44 @@ class _HomeMatchState extends State<HomeMatch> {
     ]);
   }
 
-  Future<void> fetchKlasemen() async {
+ Future<void> fetchKlasemen() async {
     try {
-      final response = await http.get(
-        Uri.parse(
-          'https://raihan-maulana41-eplradar.pbp.cs.ui.ac.id/matches/api/klasemen/',
-        ),
+      final request = context.read<CookieRequest>();
+      final response = await request.get(
+        'https://raihan-maulana41-eplradar.pbp.cs.ui.ac.id/matches/api/klasemen/',
       );
 
-      if (response.statusCode == 200) {
-        setState(() {
-          klasemen = json.decode(response.body);
-          isLoadingKlasemen = false;
-        });
-      } else {
-        errorKlasemen = 'Gagal memuat klasemen';
+      setState(() {
+        klasemen = response;
         isLoadingKlasemen = false;
-      }
+      });
     } catch (e) {
-      errorKlasemen = e.toString();
-      isLoadingKlasemen = false;
+      setState(() {
+        errorKlasemen = e.toString();
+        isLoadingKlasemen = false;
+      });
     }
   }
 
   Future<void> fetchMatches() async {
     try {
-      final response = await http.get(
-        Uri.parse(
-          'https://raihan-maulana41-eplradar.pbp.cs.ui.ac.id/matches/api/matches/',
-        ),
+      final request = context.read<CookieRequest>();
+      final data = await request.get(
+        'https://raihan-maulana41-eplradar.pbp.cs.ui.ac.id/matches/api/matches/',
       );
 
-      if (response.statusCode == 200) {
-        final List data = json.decode(response.body);
-        setState(() {
-          matches = data.map((e) => MatchModel.fromJson(e)).toList();
-          isLoadingMatches = false;
-        });
-      } else {
-        errorMatches = 'Gagal memuat pertandingan';
+      setState(() {
+        matches = (data as List).map((e) => MatchModel.fromJson(e)).toList();
         isLoadingMatches = false;
-      }
+      });
     } catch (e) {
-      errorMatches = e.toString();
-      isLoadingMatches = false;
+      setState(() {
+        errorMatches = e.toString();
+        isLoadingMatches = false;
+      });
     }
   }
-
+  
   @override
   Widget build(BuildContext context) {
     return Padding(
