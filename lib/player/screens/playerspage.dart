@@ -2,10 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:pbp_django_auth/pbp_django_auth.dart';
 import '../models/player.dart';
-import '../models/player_comment.dart';
 import '../widgets/player_card.dart';
-import '../widgets/player_comment_card.dart';
+import '../services/player_service.dart';
 import '../../clubs/models/club.dart';
+import '../../clubs/services/club_service.dart';
 
 class PlayersPage extends StatefulWidget {
   static const routeName = '/players';
@@ -20,51 +20,21 @@ class _PlayersPageState extends State<PlayersPage> {
   String selectedTeamId = 'all';
   List<Club> clubs = [];
 
-  Future<List<Player>> fetchPlayers(CookieRequest request) async {
-    final response = await request.get(
-        'https://raihan-maulana41-eplradar.pbp.cs.ui.ac.id/players/api/?team=$selectedTeamId');
-
-    return PlayerListResponse.fromJson(response).players;
-  }
-
-  Future<List<Club>> fetchClubs(CookieRequest request) async {
-    final response = await request.get('https://raihan-maulana41-eplradar.pbp.cs.ui.ac.id/clubs/api/clubs/');
-    if (response != null && response['data'] != null) {
-      return (response['data'] as List).map((c) => Club.fromJson(c)).toList();
-    }
-    return [];
-  }
-
-  Future<List<PlayerComment>> fetchComments(CookieRequest request, String playerId) async {
-    final response = await request.get('https://raihan-maulana41-eplradar.pbp.cs.ui.ac.id/players/api/$playerId/comments/');
-    return PlayerCommentListResponse.fromJson(response).comments;
-  }
-
-  Future<void> submitComment(CookieRequest request, String playerId, String commentText) async {
-    final response = await request.post(
-      'https://raihan-maulana41-eplradar.pbp.cs.ui.ac.id/players/api/$playerId/comments/',
-      {'comment': commentText},
-    );
-    if (response['status'] == 'success') {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Comment posted!")),
-      );
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(response['message'] ?? "Failed to post comment")),
-      );
-    }
-  }
-
   @override
   void initState() {
     super.initState();
     Future.microtask(() async {
       final request = context.read<CookieRequest>();
-      final fetchedClubs = await fetchClubs(request);
-      setState(() {
-        clubs = fetchedClubs;
-      });
+      try {
+        final fetchedClubs = await ClubService.fetchClubs(request);
+        if (mounted) {
+          setState(() {
+            clubs = fetchedClubs;
+          });
+        }
+      } catch (e) {
+        debugPrint('Error fetching clubs: $e');
+      }
     });
   }
 
@@ -75,217 +45,12 @@ class _PlayersPageState extends State<PlayersPage> {
   }
 
   void _showPlayerDetail(BuildContext context, Player player, String teamName) {
-    final request = context.read<CookieRequest>();
-    final TextEditingController commentController = TextEditingController();
-
     showDialog(
       context: context,
-      builder: (BuildContext context) {
-        return StatefulBuilder(
-          builder: (context, setModalState) {
-            return Dialog(
-              backgroundColor: const Color(0xFF2A2D32),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-              child: SingleChildScrollView(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    _buildDynamicPlayerImage(player, isDialog: true),
-                    Padding(
-                      padding: const EdgeInsets.all(24.0),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            player.name,
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 28,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          const SizedBox(height: 20),
-                          _buildDetailRow("Klub Saat Ini", teamName),
-                          _buildDetailRow("Posisi", player.position),
-                          _buildDetailRow("Usia", player.age.toString()),
-                          _buildDetailRow("Kewarganegaraan", player.citizenship),
-                          const SizedBox(height: 24),
-                          const Text(
-                            "Statistik Musim Ini",
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          const SizedBox(height: 12),
-                          Row(
-                            children: [
-                              _buildStatCard("Gol", player.currGoals.toString()),
-                              const SizedBox(width: 8),
-                              _buildStatCard("Assist", player.currAssists.toString()),
-                              const SizedBox(width: 8),
-                              _buildStatCard("Match", player.matchPlayed.toString()),
-                            ],
-                          ),
-                          const SizedBox(height: 32),
-                          const Divider(color: Colors.grey),
-                          const SizedBox(height: 16),
-                          const Text(
-                            "Komentar",
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          const SizedBox(height: 12),
-                          FutureBuilder<List<PlayerComment>>(
-                            future: fetchComments(request, player.id),
-                            builder: (context, snapshot) {
-                              if (snapshot.connectionState == ConnectionState.waiting) {
-                                return const Center(child: CircularProgressIndicator());
-                              }
-                              final comments = snapshot.data ?? [];
-                              if (comments.isEmpty) {
-                                return const Text("Belum ada komentar.", style: TextStyle(color: Colors.grey));
-                              }
-                              return ListView.builder(
-                                shrinkWrap: true,
-                                physics: const NeverScrollableScrollPhysics(),
-                                itemCount: comments.length,
-                                itemBuilder: (context, index) {
-                                  return PlayerCommentCard(comment: comments[index]);
-                                },
-                              );
-                            },
-                          ),
-                          const SizedBox(height: 16),
-                          TextField(
-                            controller: commentController,
-                            style: const TextStyle(color: Colors.white),
-                            decoration: InputDecoration(
-                              hintText: "Tambah komentar...",
-                              hintStyle: const TextStyle(color: Colors.grey),
-                              suffixIcon: IconButton(
-                                icon: const Icon(Icons.send, color: Colors.blueAccent),
-                                onPressed: () async {
-                                  if (commentController.text.isNotEmpty) {
-                                    await submitComment(request, player.id, commentController.text);
-                                    commentController.clear();
-                                    setModalState(() {}); // Refresh comments
-                                  }
-                                },
-                              ),
-                            ),
-                          ),
-                          const SizedBox(height: 24),
-                          Center(
-                            child: TextButton(
-                              onPressed: () => Navigator.pop(context),
-                              child: const Text("Close", style: TextStyle(color: Colors.blueAccent)),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            );
-          },
-        );
-      },
-    );
-  }
-
-  Widget _buildDynamicPlayerImage(Player player, {bool isDialog = false}) {
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        return AnimatedContainer(
-          duration: const Duration(milliseconds: 300),
-          width: double.infinity,
-          height: isDialog ? 300 : 200, // Constrained height
-          decoration: isDialog ? const BoxDecoration(
-            gradient: LinearGradient(
-              colors: [Color(0xFF374151), Color(0xFF1F2937)],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            ),
-            borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
-          ) : null,
-          child: player.fullProfilePictureUrl.isNotEmpty
-              ? (player.isLocalAsset
-                  ? Image.asset(
-                      player.fullProfilePictureUrl,
-                      fit: BoxFit.contain,
-                      errorBuilder: (context, error, stackTrace) =>
-                          const Icon(Icons.person, color: Colors.grey, size: 50),
-                    )
-                  : Image.network(
-                      player.fullProfilePictureUrl,
-                      fit: BoxFit.contain,
-                      errorBuilder: (context, error, stackTrace) =>
-                          const Icon(Icons.person, color: Colors.grey, size: 50),
-                    ))
-              : const Icon(Icons.person, color: Colors.grey, size: 50),
-        );
-      }
-    );
-  }
-
-  Widget _buildDetailRow(String label, String value) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(label, style: const TextStyle(color: Colors.grey)),
-          Text(value, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w600)),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildStatCard(String label, String value) {
-    return Expanded(
-      child: Container(
-        padding: const EdgeInsets.all(12),
-        decoration: BoxDecoration(
-          color: const Color(0xFF374151),
-          borderRadius: BorderRadius.circular(8),
-        ),
-        child: Column(
-          children: [
-            Text(label, style: const TextStyle(color: Colors.grey, fontSize: 12)),
-            Text(value, style: const TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold)),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildCustomDropdown({
-    required String value,
-    required List<DropdownMenuItem<String>> items,
-    required Function(String?) onChanged,
-  }) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-      decoration: BoxDecoration(
-        color: const Color(0xFF2A2D32),
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: Colors.grey.shade800),
-      ),
-      child: DropdownButtonHideUnderline(
-        child: DropdownButton<String>(
-          value: value,
-          dropdownColor: const Color(0xFF2A2D32),
-          style: const TextStyle(color: Colors.white),
-          icon: const Icon(Icons.arrow_drop_down, color: Colors.white),
-          onChanged: onChanged,
-          items: items,
-        ),
+      builder: (context) => Dialog(
+        backgroundColor: const Color(0xFF2A2D32),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        child: PlayerDetail(player: player, teamName: teamName),
       ),
     );
   }
@@ -309,7 +74,7 @@ class _PlayersPageState extends State<PlayersPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Hero Section (Styled)
+            // Hero Section
             Container(
               width: double.infinity,
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 40),
@@ -361,33 +126,26 @@ class _PlayersPageState extends State<PlayersPage> {
                     style: TextStyle(color: Colors.white, fontSize: 22, fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 15),
-                  _buildCustomDropdown(
-                    value: selectedTeamId,
-                    items: [
-                      const DropdownMenuItem(value: 'all', child: Text("All Teams")),
-                      ...clubs.map((club) => DropdownMenuItem(
-                        value: club.id.toString(),
-                        child: Text(club.namaKlub),
-                      )),
-                    ],
-                    onChanged: (val) {
-                      setState(() {
-                        selectedTeamId = val!;
-                      });
-                    },
-                  ),
+                  _buildCustomDropdown(),
                 ],
               ),
             ),
 
             // Player Cards List
-            FutureBuilder(
-              future: fetchPlayers(request),
-              builder: (context, AsyncSnapshot<List<Player>> snapshot) {
+            FutureBuilder<List<Player>>(
+              future: PlayerService.fetchPlayers(request, teamId: selectedTeamId),
+              builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
                   return const Padding(
                     padding: EdgeInsets.all(20),
                     child: Center(child: CircularProgressIndicator()),
+                  );
+                } else if (snapshot.hasError) {
+                  return Padding(
+                    padding: const EdgeInsets.all(40),
+                    child: Center(
+                      child: Text('Error: ${snapshot.error}', style: const TextStyle(color: Colors.red)),
+                    ),
                   );
                 } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
                   return const Padding(
@@ -420,6 +178,37 @@ class _PlayersPageState extends State<PlayersPage> {
               },
             ),
             const SizedBox(height: 40),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildCustomDropdown() {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+      decoration: BoxDecoration(
+        color: const Color(0xFF2A2D32),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: Colors.grey.shade800),
+      ),
+      child: DropdownButtonHideUnderline(
+        child: DropdownButton<String>(
+          value: selectedTeamId,
+          dropdownColor: const Color(0xFF2A2D32),
+          style: const TextStyle(color: Colors.white),
+          icon: const Icon(Icons.arrow_drop_down, color: Colors.white),
+          onChanged: (val) {
+            setState(() {
+              selectedTeamId = val!;
+            });
+          },
+          items: [
+            const DropdownMenuItem(value: 'all', child: Text("All Teams")),
+            ...clubs.map((club) => DropdownMenuItem(
+              value: club.id.toString(),
+              child: Text(club.namaKlub),
+            )),
           ],
         ),
       ),
