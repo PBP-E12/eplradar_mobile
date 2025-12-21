@@ -64,6 +64,8 @@ flutter:
   assets:
   - assets/
   - assets/images/clubs/
+  - assets/images/players/
+
   #   - images/a_dot_burr.jpeg
   #   - images/a_dot_ham.jpeg
 

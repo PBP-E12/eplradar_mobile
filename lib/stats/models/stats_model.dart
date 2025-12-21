@@ -13,7 +13,7 @@ class Stats {
 
   factory Stats.fromJson(Map<String, dynamic> json) {
     return Stats(
-      player: PlayerStats.fromJson(json["player"]),
+      player: PlayerStats.fromJson(json["players"]),
       club: ClubStats.fromJson(json["club"]),
     );
   }
