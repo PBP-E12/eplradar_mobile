@@ -1,9 +1,11 @@
+// lib/clubs/services/club_service.dart
 import 'dart:convert';
 import 'package:pbp_django_auth/pbp_django_auth.dart';
 import '../models/club.dart';
 import '../models/club_comment.dart';
 
 class ClubService {
+  // Production URL - accessible from any device
   static const String baseUrl = 'https://raihan-maulana41-eplradar.pbp.cs.ui.ac.id/clubs';
 
   // Fetch all clubs
@@ -118,6 +120,26 @@ class ClubService {
       return false;
     } catch (e) {
       throw Exception('Failed to delete comment: $e');
+    }
+  }
+
+  // Fetch players by club/team ID
+  static Future<List<dynamic>> fetchClubPlayers(
+    CookieRequest request,
+    int teamId,
+  ) async {
+    try {
+      final response = await request.get(
+        'https://raihan-maulana41-eplradar.pbp.cs.ui.ac.id/players/api/?team=$teamId',
+      );
+
+      if (response is List) {
+        return response;
+      }
+      
+      return [];
+    } catch (e) {
+      throw Exception('Failed to load players: $e');
     }
   }
 }
