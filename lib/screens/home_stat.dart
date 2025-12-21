@@ -81,7 +81,10 @@ class _HomeStatState extends State<HomeStat> {
                         ),
                       );
                     },
-                    child: const Text("Lihat Semua Statistik →"),
+                    child: const Text(
+                      "Lihat Semua Statistik →",
+                      style: TextStyle(color: Colors.blueAccent)
+                    ), 
                   ),
                 ],
               ),
