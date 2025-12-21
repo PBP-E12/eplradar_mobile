@@ -40,15 +40,20 @@ class _MatchScreenState extends State<MatchScreen> {
   int awayScore = 0;
   int userId = 1;
 
-  late CookieRequest request;
-
-  bool get isLoggedIn => request.loggedIn;
+  late ScrollController _scrollController;
 
 
   @override
   void initState() {
     super.initState();
+    _scrollController = ScrollController();
     fetchAllData();
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
   }
 
   Future<void> fetchAllData() async {
@@ -156,7 +161,7 @@ class _MatchScreenState extends State<MatchScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      endDrawer: RightDrawer(),
+      endDrawer: const RightDrawer(),
       backgroundColor: const Color(0xFF1A1C1E),
       appBar: AppBar(
         title: const Text(
@@ -182,6 +187,7 @@ class _MatchScreenState extends State<MatchScreen> {
         onRefresh: fetchAllData,
         color: const Color(0xFF3247B1),
         child: SingleChildScrollView(
+          controller: _scrollController,
           physics: const AlwaysScrollableScrollPhysics(),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -220,7 +226,7 @@ class _MatchScreenState extends State<MatchScreen> {
       height: 280,
       decoration: const BoxDecoration(
         image: DecorationImage(
-          image: AssetImage("assets/stats.png"),
+          image: AssetImage("assets/match.png"),
           fit: BoxFit.cover,
           opacity: 0.75,
         ),
@@ -230,7 +236,7 @@ class _MatchScreenState extends State<MatchScreen> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.end,
         crossAxisAlignment: CrossAxisAlignment.start,
-        children: const [
+        children: [
           Text(
             "Match",
             style: TextStyle(
@@ -247,7 +253,21 @@ class _MatchScreenState extends State<MatchScreen> {
               fontSize: 15,
             ),
           ),
-          SizedBox(height: 72),
+          SizedBox(height: 20),
+          ElevatedButton(
+            onPressed: () {
+              _scrollController.animateTo(
+                500,
+                duration: const Duration(milliseconds: 800),
+                curve: Curves.easeInOut,
+              );
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.blueAccent,
+              foregroundColor: Colors.white,
+            ),
+            child: const Text("Lihat Seluruh Pertandingan"),
+          ),
         ],
       ),
     );
