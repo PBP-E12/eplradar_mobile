@@ -81,6 +81,12 @@ class RightDrawer extends StatelessWidget {
           ),
           _item(
             context,
+            icon: Icons.person,
+            title: "Pemain",
+            routeName: PlayersPage.routeName,
+            ),
+          _item(
+            context,
             icon: Icons.article_outlined,
             title: "Berita",
             routeName: NewsPage.routeName,
