@@ -55,7 +55,7 @@ class PlayerCard extends StatelessWidget {
                   const SizedBox(height: 8),
                   Text(
                     player.name,
-                    style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
+                    style: (player.currGoals > 10)? const TextStyle(color: Colors.red, fontSize: 18, fontWeight: FontWeight.bold): const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 8),
                   Text(
